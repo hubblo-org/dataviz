@@ -15,5 +15,6 @@
 	"devDependencies": {
 		"prettier": "3.5.3",
 		"vite": "^6.3.5"
-	}
+	},
+	"scripts": {"testServer": "vite serve test/"}
 }
