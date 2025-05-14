@@ -26,12 +26,15 @@ export function assignAxes(impactFactor: ImpactFactor | ImpactFactorWithScope) {
 export function horizontalBarPlot<Type>(
   nodeId: string,
   data: Type,
+  width: number,
+  height: number,
   xLabel: string,
   yLabel: string,
   lollipop: boolean
 ) {
   let div = document.querySelector(nodeId);
   div?.firstChild?.remove();
+
   if (div) {
     const lollipopMarks = [
       ruleX([0]),
@@ -59,8 +62,8 @@ export function horizontalBarPlot<Type>(
       })
     ];
     const barPlot = plot({
-      width: 1600,
-      height: 800,
+      width: width,
+      height: height,
       y: { grid: true },
       marks: lollipop ? lollipopMarks : barMarks
     });
