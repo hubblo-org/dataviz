@@ -5,7 +5,7 @@ const data = [
   { type: "number", value: 1 }
 ];
 
-function renderHorizontalBarPlot() {
+export function renderHorizontalBarPlot() {
   const plotId = "horizontal-bar-plot";
   const mainDiv = document.getElementById("render-plot");
   const plotDiv = document.createElement("div");
@@ -14,5 +14,3 @@ function renderHorizontalBarPlot() {
 
   horizontalBarPlot(`#${plotId}`, data, 800, 600, "value", "type", true);
 }
-
-renderHorizontalBarPlot();
