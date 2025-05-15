@@ -1,6 +1,7 @@
 import * as plots from "./plots";
 
 const plotSelection = document.getElementById("plot-selection");
+plotSelection?.addEventListener("change", renderPlot);
 const plotsOptions = Object.keys(plots);
 
 plotsOptions.forEach((plot) => {
@@ -10,11 +11,10 @@ plotsOptions.forEach((plot) => {
   plotSelection?.append(option);
 });
 
-const selectedOption = (plotSelection as HTMLSelectElement).value;
 function renderPlot() {
-  plots[selectedOption]();
+  const selectedPlot = (plotSelection as HTMLSelectElement).value;
+  document.getElementById("render-plot")?.getElementsByTagName("div")[0]?.remove();
+  plots[selectedPlot]();
 }
-
-plotSelection?.addEventListener("change", renderPlot);
 
 renderPlot();

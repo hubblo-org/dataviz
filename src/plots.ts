@@ -1,6 +1,6 @@
 import type { Data } from "@observablehq/plot";
 import { select } from "d3";
-import { axisX, axisY, barX, dot, plot, ruleX, ruleY } from "@observablehq/plot";
+import { axisX, axisY, barX, dot, gridY, line, plot, ruleX, ruleY } from "@observablehq/plot";
 
 interface ImpactFactor {
   impactCriterion: string;
@@ -114,5 +114,21 @@ export function stackedBarPlot<Type>(
     });
 
     div.append(barPlot);
+  }
+}
+
+export function lineChart<Type>(nodeId: string, data: Type, xLabel: string, yLabel: string) {
+  let div = document.querySelector(nodeId);
+  div?.firstChild?.remove();
+  if (div) {
+    const lineChart = plot({
+      marks: [
+        gridY({ strokeDasharray: "0.75,2", strokeOpacity: 1 }),
+        axisY({ tickSize: 0, dx: 38, dy: -6, lineAnchor: "bottom" }),
+        ruleY([0]),
+        line(data as Data, { x: xLabel, y: yLabel, markerEnd: "dot" })
+      ]
+    });
+    div.append(lineChart);
   }
 }
