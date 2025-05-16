@@ -1,6 +1,17 @@
 import type { Data } from "@observablehq/plot";
 import { select } from "d3";
-import { axisX, axisY, barX, dot, gridY, line, plot, ruleX, ruleY } from "@observablehq/plot";
+import {
+  axisX,
+  axisY,
+  barX,
+  dot,
+  formatIsoDate,
+  gridY,
+  line,
+  plot,
+  ruleX,
+  ruleY
+} from "@observablehq/plot";
 
 interface ImpactFactor {
   impactCriterion: string;
@@ -117,14 +128,32 @@ export function stackedBarPlot<Type>(
   }
 }
 
-export function lineChart<Type>(nodeId: string, data: Type, xLabel: string, yLabel: string) {
+export function lineChart<Type>(
+  nodeId: string,
+  data: Type,
+  width: number,
+  height: number,
+  xLabel: string,
+  yLabel: string
+) {
   let div = document.querySelector(nodeId);
   div?.firstChild?.remove();
   if (div) {
     const lineChart = plot({
+      height: height,
+      marginLeft: 0,
+      round: true,
+      width: width,
+      x: { label: null, insetLeft: 36, type: "time", ticks: "year" },
       marks: [
         gridY({ strokeDasharray: "0.75,2", strokeOpacity: 1 }),
-        axisY({ tickSize: 0, dx: 38, dy: -6, lineAnchor: "bottom" }),
+        axisY({
+          tickSize: 0,
+          dx: 38,
+          dy: -6,
+          labelOffset: -36,
+          lineAnchor: "bottom"
+        }),
         ruleY([0]),
         line(data as Data, { x: xLabel, y: yLabel, markerEnd: "dot" })
       ]
