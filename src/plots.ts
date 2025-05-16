@@ -10,7 +10,9 @@ import {
   line,
   plot,
   ruleX,
-  ruleY
+  ruleY,
+  selectLast,
+  text
 } from "@observablehq/plot";
 
 interface ImpactFactor {
@@ -128,36 +130,58 @@ export function stackedBarPlot<Type>(
   }
 }
 
+// Renders a line chart or a multiple line chart.
+// Specify the `zDimension` to identify the key to group data with and render multiple lines in the chart.
 export function lineChart<Type>(
   nodeId: string,
   data: Type,
   width: number,
   height: number,
   xLabel: string,
-  yLabel: string
+  yLabel: string,
+  zDimension?: string
 ) {
   let div = document.querySelector(nodeId);
   div?.firstChild?.remove();
+
+  const lineMarks = [
+    gridY({ strokeDasharray: "0.75,2", strokeOpacity: 1 }),
+    axisY({
+      tickSize: 0,
+      dx: 38,
+      dy: -6,
+      labelOffset: -36,
+      lineAnchor: "bottom"
+    }),
+    ruleY([0]),
+    line(data as Data, { x: xLabel, y: yLabel, z: zDimension, markerEnd: "dot" })
+  ];
+
+  const multiLineMarks = lineMarks.concat([
+    text(
+      data as Data,
+      selectLast({
+        x: xLabel,
+        y: yLabel,
+        z: zDimension,
+        text: zDimension,
+        textAnchor: "start",
+        dx: 3
+      })
+    )
+  ]);
+
   if (div) {
     const lineChart = plot({
       height: height,
       marginLeft: 0,
       round: true,
+      style: "overflow:visible",
       width: width,
       x: { label: null, insetLeft: 36, type: "time", ticks: "year" },
-      marks: [
-        gridY({ strokeDasharray: "0.75,2", strokeOpacity: 1 }),
-        axisY({
-          tickSize: 0,
-          dx: 38,
-          dy: -6,
-          labelOffset: -36,
-          lineAnchor: "bottom"
-        }),
-        ruleY([0]),
-        line(data as Data, { x: xLabel, y: yLabel, markerEnd: "dot" })
-      ]
+      marks: zDimension ? multiLineMarks : lineMarks
     });
+
     div.append(lineChart);
   }
 }
