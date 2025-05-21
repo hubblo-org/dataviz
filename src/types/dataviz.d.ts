@@ -8,3 +8,9 @@ export declare type Leaf = {
   category: string;
   value: number;
 };
+
+export declare type Region = {
+  name: string;
+  center: number[];
+  hexagonCoordinates?: number[][];
+};
