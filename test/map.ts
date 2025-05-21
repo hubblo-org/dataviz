@@ -1,3 +1,20 @@
-import * as carto from "./carto";
+import * as maps from "./carto";
 
-carto.renderMap();
+const mapSelection = document.getElementById("map-selection");
+mapSelection?.addEventListener("change", renderMap);
+const mapsOptions = Object.keys(maps);
+
+mapsOptions.forEach((map) => {
+  const option = document.createElement("option");
+  option.value = map;
+  option.textContent = map;
+  mapSelection?.append(option);
+});
+
+function renderMap() {
+  const selectedMap = (mapSelection as HTMLSelectElement).value;
+  document.getElementById("map-container")?.getElementsByTagName("div")[0]?.remove();
+  maps[selectedMap]();
+}
+
+renderMap();

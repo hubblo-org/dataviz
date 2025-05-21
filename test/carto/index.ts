@@ -1,1 +1,1 @@
-export * from "./rendermap";
+export * from "./maps";
