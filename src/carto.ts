@@ -21,6 +21,37 @@ export function hexagonCoordinates(
   return coordinates;
 }
 
+export function getPointAtDistance(
+  latitude: number,
+  longitude: number,
+  distance: number,
+  bearing: number
+) {
+  // Average Earth radius
+  const radius = 6371;
+
+  const latRadians = latitude * (Math.PI / 180);
+  const lngRadians = longitude * (Math.PI / 180);
+  const angle = bearing * (Math.PI / 180);
+
+  const newPointLat = Math.asin(
+    Math.sin(latRadians) * Math.cos(distance / radius) +
+      Math.cos(latRadians) * Math.sin(distance / radius) * Math.cos(angle)
+  );
+  const newPointLng =
+    lngRadians +
+    Math.atan2(
+      Math.sin(angle) * Math.sin(distance / radius) * Math.cos(latRadians),
+      Math.cos(distance / radius) - Math.sin(latRadians) * Math.sin(newPointLat)
+    );
+
+  const newPointLatDegrees = newPointLat * (180 / Math.PI);
+  const newPointLngDegrees = newPointLng * (180 / Math.PI);
+
+  const newCoordinates = [newPointLatDegrees, newPointLngDegrees];
+  return newCoordinates;
+}
+
 // Creates a valid GeoJSON object.
 //
 // RFC 7946 specifies that coordinates have to be ordered as [longitude, latitude], which can be contrary
