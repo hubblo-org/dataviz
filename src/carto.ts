@@ -55,12 +55,16 @@ export function getPointAtDistance(
 // Creates a valid GeoJSON object.
 //
 // RFC 7946 specifies that coordinates have to be ordered as [longitude, latitude], which can be contrary
-// to the specifications of other libraries ordering coordinates as [latitude, longitude].
+// to the implementations of other libraries using coordinates as [latitude, longitude].
+// Other specification rules to follow: the first and last coordinates for a Polygon have to be the same
+// in order to be drawn on a projection ; the right-hand rule must be respected, i. e. the coordinates for an exterior ring
+// must be ordered counterclockwise.
 export function createRegionsGeoJSON(regions: Region[]) {
   const collection = {
     type: "FeatureCollection",
     features: regions.map((region) => {
       region.hexagonCoordinates.forEach((c) => c.reverse());
+      region.hexagonCoordinates.reverse();
       const firstNode = region.hexagonCoordinates[0];
       const feature = {
         type: "Feature",
