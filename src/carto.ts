@@ -78,7 +78,7 @@ export function createRegionsGeoJSON(regions: Region[]) {
   return collection;
 }
 
-export function hexbinMap(nodeId: string, data: any) {
+export function hexbinMap(nodeId: string, data: any, scaleFactor: number, translationOffset: [number, number]) {
   const container = d3.select(nodeId);
   const width = 800;
   const height = 600;
@@ -87,19 +87,18 @@ export function hexbinMap(nodeId: string, data: any) {
     .append("svg")
     .attr("id", "map-svg")
     .attr("width", width)
-    .attr("height", height)
-    .attr("style", "background-color: grey");
+    .attr("height", height);
 
-  const projection = d3.geoMercator().scale(1000).translate([300, 1200]);
+  const projection = d3.geoMercator().scale(scaleFactor).translate(translationOffset);
+
+  let path = d3.geoPath().projection(projection);
 
   svg
     .append("g")
     .selectAll("path")
-    .data(data.features)
+    .data(data["features"])
     .join("path")
-    .attr("opacity", "0.6")
-    .attr("fill", "purple")
-    .attr("d", d3.geoPath().projection(projection))
-    .attr("stroke", "black")
-    .append("title").text((d) => `${d["properties"]["region"]}`);
+    .attr("d", path)
+    .attr("fill", "grey")
+    .attr("stroke", "black");
 }
