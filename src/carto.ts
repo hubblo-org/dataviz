@@ -2,14 +2,20 @@ import { Region } from "./types/dataviz";
 import * as d3 from "d3";
 
 // Generate the hexagon coordinates relative to a given position.
-export function hexagonCoordinates(latitude: number, longitude: number): number[][] {
-  const r = 1 / Math.sin(Math.PI / 3);
+export function hexagonCoordinates(
+  latitude: number,
+  longitude: number,
+  radius: number = 1 / Math.sin(Math.PI / 3)
+): number[][] {
   const sides = 6;
   const baseAngle = Math.floor(360 / sides);
   const iterableSides = [...Array(sides).keys()];
   const coordinates = iterableSides.map((side) => {
     const relativeAngle = (baseAngle * side + Math.floor(baseAngle / 2)) * (Math.PI / 180);
-    const c = [latitude + r * Math.cos(relativeAngle), longitude + r * Math.sin(relativeAngle)];
+    const c = [
+      latitude + radius * Math.cos(relativeAngle),
+      longitude + radius * Math.sin(relativeAngle)
+    ];
     return c;
   });
   return coordinates;
