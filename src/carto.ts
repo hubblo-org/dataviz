@@ -1,4 +1,5 @@
-import { Region } from "./types/dataviz";
+import { Feature, Geometry, Polygon } from "geojson";
+import { Region, RegionProperties } from "./types/dataviz";
 import * as d3 from "d3";
 
 // Generate the hexagon coordinates relative to a given position.
@@ -78,10 +79,25 @@ export function createRegionsGeoJSON(regions: Region[]) {
   return collection;
 }
 
-export function hexbinMap(nodeId: string, data: any, scaleFactor: number, translationOffset: [number, number]) {
+// d3 winding order for polygon coordinates is the opposite of the winding convention for GeoJSON.
+// In GeoJSON, polygon coordinates are ordered counter-clockwise for internal rings, clockwise for external
+// rings.
+function rewind(features: Array<Feature>) {
+  features.forEach((feature: Feature<Polygon>) => feature.geometry.coordinates[0].reverse());
+  return features;
+}
+
+export function franceRegionsHexbinMap(
+  nodeId: string,
+  data: GeoJSON.FeatureCollection<Polygon, RegionProperties>,
+  scaleFactor: number,
+  translationOffset: [number, number]
+) {
   const container = d3.select(nodeId);
   const width = 800;
   const height = 600;
+
+  const rewoundFeatures = rewind(data.features);
 
   const svg = container
     .append("svg")
@@ -96,9 +112,11 @@ export function hexbinMap(nodeId: string, data: any, scaleFactor: number, transl
   svg
     .append("g")
     .selectAll("path")
-    .data(data["features"])
+    .data(rewoundFeatures)
     .join("path")
     .attr("d", path)
-    .attr("fill", "grey")
-    .attr("stroke", "black");
+    .attr("fill", "white")
+    .attr("stroke", "black")
+    .append("title")
+    .text((d) => d.properties.region);
 }
