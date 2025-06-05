@@ -1,8 +1,9 @@
-import L, { LatLngExpression, LatLngTuple } from "leaflet";
-import { createRegionsGeoJSON, getPointAtDistance, hexagonCoordinates } from "../../src";
-import { Region } from "../../src/types/dataviz";
-import { hexbinMap } from "../../src/carto";
-import data from "./regions.geojson.json";
+import L, { LatLngExpression } from "leaflet";
+import { getPointAtDistance, hexagonCoordinates } from "../../src";
+import { Region, RegionProperties } from "../../src/types/dataviz";
+import { createRegionsGeoJSON, franceRegionsHexbinMap } from "../../src/carto";
+import { Feature, FeatureCollection, GeoJsonProperties, Polygon } from "geojson";
+import franceRegionsData from "../data/regionswithproperties.geojson.json";
 
 const franceRegions: Region[] = [
   { name: "Auvergne-Rhône-Alpes", center: [45.1922222222, 4.5380555556] },
@@ -92,24 +93,36 @@ export function leafletMap() {
   relevantRegions.push(normandie);
   relevantRegions.push(grandEst);
   relevantRegions.push(idf);
+
   const hexCoords = relevantRegions.map((region) => {
     const hexagon = hexagonCoordinates(region.center[0], region.center[1], 0.9);
     region.hexagonCoordinates = hexagon;
     return region;
   });
   hexCoords.forEach((coords) =>
-    L.polygon(coords.hexagonCoordinates, { color: "red" }).addTo(myMap)
+    L.polygon(coords.hexagonCoordinates as LatLngExpression[], { color: "red" }).addTo(myMap)
   );
-  const geoJSONcollection = createRegionsGeoJSON(hexCoords);
-  hexbinMap("#map-container", geoJSONcollection);
 }
 
 export function franceHexbinMap() {
-  const regionsHexagonCoordinates = franceRegions.map((region) => {
-    const hexagon = hexagonCoordinates(region.center[0], region.center[1], 0.8);
-    region.hexagonCoordinates = hexagon;
-    return region;
-  });
-  const geoJSONcollection = createRegionsGeoJSON(regionsHexagonCoordinates);
-  hexbinMap("#map-container", geoJSONcollection);
+  interface RegionWithCriteria extends Region {
+    surface: number;
+    population: number;
+  }
+
+  const surfaces = franceRegionsData.features
+    .map((region) => region.properties.region.surface)
+    .toSorted((a: number, b: number) => a - b);
+  const surfaceRange = [surfaces[0], surfaces[surfaces.length - 1]];
+  const populations = franceRegionsData.features
+    .map((region) => region.properties.region.population)
+    .toSorted((a: number, b: number) => a - b);
+  const populationRange = [populations[0], populations[populations.length - 1]];
+
+  franceRegionsHexbinMap(
+    "#map-container",
+    franceRegionsData,
+    surfaceRange,
+    "surface" as keyof RegionWithCriteria
+  );
 }

@@ -14,6 +14,7 @@ mapsOptions.forEach((map) => {
 function renderMap() {
   const selectedMap = (mapSelection as HTMLSelectElement).value;
   document.getElementById("map-container")?.getElementsByTagName("div")[0]?.remove();
+  document.getElementById("map-container")?.getElementsByTagName("svg")[0]?.remove();
   maps[selectedMap]();
 }
 
