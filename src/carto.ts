@@ -1,4 +1,4 @@
-import { Feature, Geometry, Polygon } from "geojson";
+import { Feature, FeatureCollection, Geometry, Polygon } from "geojson";
 import { Region, RegionProperties } from "./types/dataviz";
 import * as d3 from "d3";
 
@@ -60,17 +60,19 @@ export function getPointAtDistance(
 // Other specification rules to follow: the first and last coordinates for a Polygon have to be the same
 // in order to be drawn on a projection ; the right-hand rule must be respected, i. e. the coordinates for an exterior ring
 // must be ordered counterclockwise.
-export function createRegionsGeoJSON(regions: Region[]) {
-  const collection = {
+export function createRegionsGeoJSON(
+  regions: Region[]
+): GeoJSON.FeatureCollection<Polygon, RegionProperties> {
+  const collection: FeatureCollection<Polygon, RegionProperties> = {
     type: "FeatureCollection",
     features: regions.map((region) => {
       region.hexagonCoordinates.forEach((c) => c.reverse());
       region.hexagonCoordinates.reverse();
       const firstNode = region.hexagonCoordinates[0];
-      const feature = {
+      const feature: Feature<Polygon, RegionProperties> = {
         type: "Feature",
         geometry: { type: "Polygon", coordinates: [region.hexagonCoordinates] },
-        properties: { region: region.name }
+        properties: { region: { name: region.name, center: region.center } }
       };
       feature.geometry.coordinates[0].push(firstNode);
       return feature;
@@ -83,20 +85,29 @@ export function createRegionsGeoJSON(regions: Region[]) {
 // In GeoJSON, polygon coordinates are ordered counter-clockwise for internal rings, clockwise for external
 // rings.
 function rewind(features: Array<Feature>) {
-  features.forEach((feature: Feature<Polygon>) => feature.geometry.coordinates[0].reverse());
+  features.forEach((feature: Feature<Polygon>) => {
+    if (feature.geometry.coordinates[0][0][0] < feature.geometry.coordinates[0][1][0]) {
+      return;
+    } else {
+      feature.geometry.coordinates[0].reverse();
+    }
+  });
   return features;
 }
 
 export function franceRegionsHexbinMap(
   nodeId: string,
-  data: GeoJSON.FeatureCollection<Polygon, RegionProperties>,
-  scaleFactor: number,
-  translationOffset: [number, number]
+  data: FeatureCollection<Polygon, RegionProperties>,
+  domain: number[],
+  criteria: keyof RegionProperties,
+  scaleFactor: number = 1200,
+  translationOffset: [number, number] = [400, 1400]
 ) {
   const container = d3.select(nodeId);
   const width = 800;
   const height = 600;
 
+  const colorScale = d3.scaleThreshold().domain(domain).range(d3.schemeBlues[3]);
   const rewoundFeatures = rewind(data.features);
 
   const svg = container
@@ -115,8 +126,12 @@ export function franceRegionsHexbinMap(
     .data(rewoundFeatures)
     .join("path")
     .attr("d", path)
-    .attr("fill", "white")
     .attr("stroke", "black")
+    .attr("fill", function (d) {
+      return colorScale(d.properties.region[criteria]);
+    })
     .append("title")
-    .text((d) => d.properties.region);
+    .text((d) => {
+      return d.properties.region.name;
+    });
 }
