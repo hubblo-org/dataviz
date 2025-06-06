@@ -14,9 +14,11 @@ export declare type Leaf = {
 export declare type Region = {
   name: string;
   center: number[];
+  surface?: number;
+  population?: number;
   hexagonCoordinates?: number[][];
 };
 
 export declare interface RegionProperties extends GeoJsonProperties {
-  region: string;
+  region: Omit<Region, "hexagonCoordinates">;
 }

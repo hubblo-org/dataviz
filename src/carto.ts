@@ -60,6 +60,7 @@ export function getPointAtDistance(
 // Other specification rules to follow: the first and last coordinates for a Polygon have to be the same
 // in order to be drawn on a projection ; the right-hand rule must be respected, i. e. the coordinates for an exterior ring
 // must be ordered counterclockwise.
+// All region properties can be useful and added to the feature properties, except the hexagon coordinates, which would be redundant.
 export function createRegionsGeoJSON(
   regions: Region[]
 ): GeoJSON.FeatureCollection<Polygon, RegionProperties> {
@@ -68,11 +69,12 @@ export function createRegionsGeoJSON(
     features: regions.map((region) => {
       region.hexagonCoordinates.forEach((c) => c.reverse());
       region.hexagonCoordinates.reverse();
+      const { hexagonCoordinates, ...regionProperties } = region;
       const firstNode = region.hexagonCoordinates[0];
       const feature: Feature<Polygon, RegionProperties> = {
         type: "Feature",
         geometry: { type: "Polygon", coordinates: [region.hexagonCoordinates] },
-        properties: { region: { name: region.name, center: region.center } }
+        properties: { region: regionProperties }
       };
       feature.geometry.coordinates[0].push(firstNode);
       return feature;
