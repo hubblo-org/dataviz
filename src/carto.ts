@@ -113,7 +113,7 @@ export function franceRegionsHexbinMap(
   const width = 800;
   const height = 600;
 
-  const colorScale = d3.scaleThreshold().domain(domain).range(d3.schemeBlues[3]);
+  const colorScale = d3.scaleQuantile().domain(domain).range(d3.schemeReds[7]);
   const rewoundFeatures = rewind(data.features);
 
   const svg = container
@@ -138,6 +138,6 @@ export function franceRegionsHexbinMap(
     })
     .append("title")
     .text((d) => {
-      return d.properties.region.name;
+      return `Region: ${d.properties.region.name}\n Value: ${d.properties.region[criteria]}`;
     });
 }
