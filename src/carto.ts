@@ -86,7 +86,11 @@ export function createRegionsGeoJSON(
 // d3 winding order for polygon coordinates is the opposite of the winding convention for GeoJSON.
 // In GeoJSON, polygon coordinates are ordered counter-clockwise for internal rings, clockwise for external
 // rings.
-function rewind(features: Array<Feature>) {
+// Checking the winding order of coordinates can be necessary, especially when dealing with state ; if coordinates
+// were already rewound, one might not want to rewind them again as this would create the common problem of the whole projection
+// being designated as the polygon to be drawn, except for the internal polygon.
+// See an illustration here: https://observablehq.com/@d3/winding-order.
+export function rewind(features: Array<Feature>) {
   features.forEach((feature: Feature<Polygon>) => {
     if (feature.geometry.coordinates[0][0][0] < feature.geometry.coordinates[0][1][0]) {
       return;
