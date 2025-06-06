@@ -2,7 +2,6 @@ import L, { LatLngExpression } from "leaflet";
 import { getPointAtDistance, hexagonCoordinates } from "../../src";
 import { Region, RegionProperties } from "../../src/types/dataviz";
 import { createRegionsGeoJSON, franceRegionsHexbinMap } from "../../src/carto";
-import { Feature, FeatureCollection, GeoJsonProperties, Polygon } from "geojson";
 import franceRegionsData from "../data/regionswithproperties.geojson.json";
 
 const franceRegions: Region[] = [
@@ -119,10 +118,36 @@ export function franceHexbinMap() {
     .toSorted((a: number, b: number) => a - b);
   const populationRange = [populations[0], populations[populations.length - 1]];
 
-  franceRegionsHexbinMap(
-    "#map-container",
-    franceRegionsData,
-    surfaceRange,
-    "surface" as keyof RegionWithCriteria
-  );
+  const options = [
+    { criteria: "surface", range: surfaceRange },
+    { criteria: "population", range: populationRange }
+  ];
+
+  const container = document.getElementById("map-container");
+  const select = document.createElement("select");
+  container?.append(select);
+  options.forEach((option) => {
+    const el = document.createElement("option");
+    el.value = option.criteria;
+    el.textContent = option.criteria;
+    select.append(el);
+  });
+  select.addEventListener("change", renderHexBinMap);
+
+  function renderHexBinMap() {
+    const svg = document.getElementById("map-svg");
+    if (svg) {
+      svg.remove();
+    }
+
+    const criteria = select.value;
+    const range = options.find((option) => option.criteria == criteria)?.range;
+    franceRegionsHexbinMap(
+      "#map-container",
+      franceRegionsData,
+      range,
+      criteria as keyof RegionWithCriteria
+    );
+  }
+  renderHexBinMap();
 }
