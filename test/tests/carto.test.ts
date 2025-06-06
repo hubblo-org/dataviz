@@ -1,9 +1,15 @@
 import { expect, test } from "vitest";
-import { createRegionsGeoJSON, hexagonCoordinates } from "../../src";
+import { createRegionsGeoJSON, hexagonCoordinates, rewind } from "../../src";
 import { Region } from "../../src/types/dataviz";
+import { Feature } from "geojson";
 
 const franceRegions: Region[] = [
-  { name: "Auvergne-Rhône-Alpes", center: [45.5158333333, 4.5380555556] },
+  {
+    name: "Auvergne-Rhône-Alpes",
+    center: [45.5158333333, 4.5380555556],
+    surface: 69711,
+    population: 8042963
+  },
   { name: "Bourgogne-Franche-Comté", center: [47.2352777778, 4.8091666667] },
   { name: "Bretagne", center: [48.1797222222, -2.8386111111] },
   { name: "Centre-Val-de-Loire", center: [47.4805555556, 1.6852777778] },
@@ -31,4 +37,37 @@ test("it creates a valid geoJSON collection of regions as hexagons", () => {
     expect(feature["geometry"]["type"]).toBe("Polygon");
     expect(feature["geometry"]["coordinates"][0]!.length).toEqual(7);
   });
+});
+
+test("it allows properties to be allocated for each feature in the geoJSON collection", () => {
+  const geoJSONcollection = createRegionsGeoJSON(regionsHexagonCoordinates);
+  geoJSONcollection["features"].forEach((feature, index) => {
+    expect(feature["properties"]["region"]["name"]).toBe(franceRegions[index].name);
+    expect(feature["properties"]["region"]["center"]).toBe(franceRegions[index].center);
+    expect(feature["properties"]["region"]["hexagonCoordinates"]).toBe(undefined);
+  });
+});
+
+test("it reverts coordinates from a given feature if coordinates need to be parsed clockwise", () => {
+  const counterClockwiseCoordinates = {
+    features: [
+      {
+        type: "Feature",
+        geometry: {
+          type: "Polygon",
+          coordinates: [
+            [
+              [1, 0],
+              [0, 1]
+            ]
+          ]
+        }
+      }
+    ]
+  };
+  rewind((counterClockwiseCoordinates.features as Array<Feature>));
+  expect(counterClockwiseCoordinates["features"][0]["geometry"]["coordinates"][0]).toStrictEqual([
+    [0, 1],
+    [1, 0]
+  ]);
 });
