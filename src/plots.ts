@@ -7,6 +7,7 @@ import {
   dot,
   formatIsoDate,
   gridY,
+  groupY,
   line,
   plot,
   ruleX,
@@ -93,41 +94,65 @@ export function addLogo(nodeId: string, logo: string) {
   logoDiv.append("span").text("Hubblo").attr("class", "logo");
 }
 
+// Renders a bat plot with stacked values, with keys provided as arguments (`yLabel` and `xLabel`).
+// Observable can count and stack values, allowing to get part of a whole represented as a share of the
+// rendered stacked bar. `fillLabel` is not to be provided in that case.
+// In other cases, one might want to fill each bar with stacked values computed from another data field,
+// to fill each share of the rendered bar with. `fillLabel` indicates that field.  
 export function stackedBarPlot<Type>(
   nodeId: string,
   data: Type,
   width: number,
   height: number,
   domains: string[],
-  yLabel: string,
   xLabel: string,
-  domainColor: string
+  yLabel: string,
+  fillLabel?: string,
 ) {
   let div = document.querySelector(nodeId);
   div?.firstChild?.remove();
-  if (div) {
-    const barPlot = plot({
-      width: width,
-      height: height,
-      className: "plot",
-      color: { legend: true, domain: domains },
-      x: { percent: true },
-      marks: [
-        axisY({ fontSize: 12, label: null, marginLeft: 60 }),
-        axisX({ marginBottom: 48 }),
-        barX(data as Data, {
-          y: yLabel,
-          x: xLabel,
-          fill: domainColor,
-          order: domains,
-          offset: "normalize",
-          tip: true
-        })
-      ]
-    });
 
-    div.append(barPlot);
-  }
+  const countOptions = [
+    axisY({ fontSize: 12, label: null, marginLeft: 60 }),
+    axisX({ marginBottom: 48 }),
+    barX(
+      data as Data,
+      groupY(
+        { x: "count" },
+        {
+          fill: xLabel,
+          y: yLabel,
+          sort: { y: "x", reverse: true, color: "width" },
+          tip: true,
+          offset: "normalize"
+        }
+      )
+    )
+  ];
+
+  const fillOptions = [
+    axisY({ fontSize: 12, label: null, marginLeft: 60 }),
+    axisX({ marginBottom: 48 }),
+    barX(data as Data, {
+      y: yLabel,
+      x: xLabel,
+      fill: fillLabel,
+      order: domains,
+      offset: "normalize",
+      tip: true
+    })
+  ];
+
+  const barPlot = plot({
+    width: width,
+    height: height,
+    className: "plot",
+    color: { legend: true, domain: domains },
+    x: { percent: true },
+    marks: fillLabel ? fillOptions : countOptions 
+  });
+
+  div.append(barPlot);
 }
 
 // Renders a line chart or a multiple line chart.
