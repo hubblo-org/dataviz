@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { createRegionsGeoJSON, hexagonCoordinates, rewind } from "../../src";
 import { Region } from "../../src/types/dataviz";
-import { Feature } from "geojson";
+import { Feature, Polygon } from "geojson";
 
 const franceRegions: Region[] = [
   {
@@ -65,7 +65,7 @@ test("it reverts coordinates from a given feature if coordinates need to be pars
       }
     ]
   };
-  rewind((counterClockwiseCoordinates.features as Array<Feature>));
+  rewind((counterClockwiseCoordinates.features as Array<Feature<Polygon>>));
   expect(counterClockwiseCoordinates["features"][0]["geometry"]["coordinates"][0]).toStrictEqual([
     [0, 1],
     [1, 0]

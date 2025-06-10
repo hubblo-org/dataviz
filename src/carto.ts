@@ -67,6 +67,9 @@ export function createRegionsGeoJSON(
   const collection: FeatureCollection<Polygon, RegionProperties> = {
     type: "FeatureCollection",
     features: regions.map((region) => {
+      if (!region.hexagonCoordinates) {
+        throw new Error("Region hexagon coordinates are missing. These are needed for rendering the polygon geometry on a projection.");
+      }
       region.hexagonCoordinates.forEach((c) => c.reverse());
       region.hexagonCoordinates.reverse();
       const { hexagonCoordinates, ...regionProperties } = region;
@@ -90,7 +93,7 @@ export function createRegionsGeoJSON(
 // were already rewound, one might not want to rewind them again as this would create the common problem of the whole projection
 // being designated as the polygon to be drawn, except for the internal polygon.
 // See an illustration here: https://observablehq.com/@d3/winding-order.
-export function rewind(features: Array<Feature>) {
+export function rewind(features: Array<Feature<Polygon>>): Array<Feature<Polygon>> {
   features.forEach((feature: Feature<Polygon>) => {
     if (feature.geometry.coordinates[0][0][0] < feature.geometry.coordinates[0][1][0]) {
       return;
@@ -134,10 +137,10 @@ export function franceRegionsHexbinMap(
     .attr("d", path)
     .attr("stroke", "black")
     .attr("fill", function (d) {
-      return colorScale(d.properties.region[criteria]);
+      return colorScale(d.properties!.region[criteria]);
     })
     .append("title")
     .text((d) => {
-      return `Region: ${d.properties.region.name}\n Value: ${d.properties.region[criteria]}`;
+      return `Region: ${d.properties!.region.name}\n Value: ${d.properties!.region[criteria]}`;
     });
 }
