@@ -1,8 +1,14 @@
-import { Feature, FeatureCollection, Geometry, Polygon } from "geojson";
+import { Feature, FeatureCollection, Polygon } from "geojson";
 import { Region, RegionProperties } from "./types/dataviz";
 import * as d3 from "d3";
 
-// Generate the hexagon coordinates relative to a given position.
+/** Generates the hexagon coordinates relative to a given position.
+ *
+ * @param latitude - The latitude coordinate for the given position.
+ * @param longitude - The longitude coordinate for the given position.
+ * @param [radius=1 / Math.sin(Math.PI / 3)] - The radius for the circle to be drawn around the given position.
+ *
+ */
 export function hexagonCoordinates(
   latitude: number,
   longitude: number,
@@ -22,12 +28,21 @@ export function hexagonCoordinates(
   return coordinates;
 }
 
+/** Generates the coordinates of a point located at the provided distance from another point.
+ *
+ * @param latitude - The latitude coordinate for the starting position.
+ * @param longitude - The longitude coordinate for the starting position.
+ * @param distance - The distance in meters from the starting point to the ending point. 
+ * @param bearing - The direction angle towards the ending point.
+ *
+ * @returns The generated coordinates for the queried point.
+ */
 export function getPointAtDistance(
   latitude: number,
   longitude: number,
   distance: number,
   bearing: number
-) {
+): number[] {
   // Average Earth radius
   const radius = 6371;
 
@@ -53,14 +68,19 @@ export function getPointAtDistance(
   return newCoordinates;
 }
 
-// Creates a valid GeoJSON object.
-//
-// RFC 7946 specifies that coordinates have to be ordered as [longitude, latitude], which can be contrary
-// to the implementations of other libraries using coordinates as [latitude, longitude].
-// Other specification rules to follow: the first and last coordinates for a Polygon have to be the same
-// in order to be drawn on a projection ; the right-hand rule must be respected, i. e. the coordinates for an exterior ring
-// must be ordered counterclockwise.
-// All region properties can be useful and added to the feature properties, except the hexagon coordinates, which would be redundant.
+/** Creates a valid GeoJSON object.
+*
+* @remarks 
+* RFC 7946 specifies that coordinates have to be ordered as [longitude, latitude], which can be contrary
+* to the implementations of other libraries using coordinates as [latitude, longitude].
+* Other specification rules to follow: the first and last coordinates for a Polygon have to be the same
+* in order to be drawn on a projection ; the right-hand rule must be respected, i. e. the coordinates for an exterior ring
+* must be ordered counterclockwise.
+* All region properties can be useful and added to the feature properties, except the hexagon coordinates, which would be redundant.
+*
+* @param regions - The input regions to create the GeoJSON collection from.
+* @returns A GeoJSON collection of Polygons with each region metadata as properties.
+*/
 export function createRegionsGeoJSON(
   regions: Region[]
 ): GeoJSON.FeatureCollection<Polygon, RegionProperties> {
@@ -86,13 +106,22 @@ export function createRegionsGeoJSON(
   return collection;
 }
 
-// d3 winding order for polygon coordinates is the opposite of the winding convention for GeoJSON.
-// In GeoJSON, polygon coordinates are ordered counter-clockwise for internal rings, clockwise for external
-// rings.
-// Checking the winding order of coordinates can be necessary, especially when dealing with state ; if coordinates
-// were already rewound, one might not want to rewind them again as this would create the common problem of the whole projection
-// being designated as the polygon to be drawn, except for the internal polygon.
-// See an illustration here: https://observablehq.com/@d3/winding-order.
+/*
+* Rewinds each set of coordinates.
+*
+* @remarks 
+*
+* d3 winding order for polygon coordinates is the opposite of the winding convention for GeoJSON.
+* In GeoJSON, polygon coordinates are ordered counter-clockwise for internal rings, clockwise for external
+* rings.
+* Checking the winding order of coordinates can be necessary, especially when dealing with state ; if coordinates
+* were already rewound, one might not want to rewind them again as this would create the common problem of the whole projection
+* being designated as the polygon to be drawn, except for the internal polygon.
+* More information here: {@link https://observablehq.com/@d3/winding-order}
+*
+* @param features - The array of feature containing the set of polygon coordinates.
+*
+*/
 export function rewind(features: Array<Feature<Polygon>>): Array<Feature<Polygon>> {
   features.forEach((feature: Feature<Polygon>) => {
     if (feature.geometry.coordinates[0][0][0] < feature.geometry.coordinates[0][1][0]) {
@@ -104,9 +133,28 @@ export function rewind(features: Array<Feature<Polygon>>): Array<Feature<Polygon
   return features;
 }
 
+/** 
+ * Renders a map of France regions as hexagons, each region colored according to the value of the provided
+ * criteria.
+ *
+ * @remarks
+ * For data visualisation, using a realistic map of a geographical entities and associating
+ * data to each entity can create a cognitive bias depending on their size (for example, a value
+ * associated to a larger region relative to other regions). Using a map of hexagons with identical
+ * sizes removes that bias, provided this map reminds of the larger entity to which each region is
+ * related to.
+ *
+ * @param nodeId - The DOM element inside which the SVG map will be rendered.
+ * @param regions - The GeoJSON collection containing the regions of France.
+ * @param domain - The range of values for the provided criteria. 
+ * @param criteria - The criteria selected to color each region with.
+ * @param [scaleFactor=1200] - The scale factor to be set on the map projection.
+ * @param [translationOffset=[400, 1400]] - The pixel coordinates for the projection's center.
+ *
+ */
 export function franceRegionsHexbinMap(
   nodeId: string,
-  data: FeatureCollection<Polygon, RegionProperties>,
+  regions: FeatureCollection<Polygon, RegionProperties>,
   domain: number[],
   criteria: keyof RegionProperties,
   scaleFactor: number = 1200,
@@ -117,7 +165,7 @@ export function franceRegionsHexbinMap(
   const height = 600;
 
   const colorScale = d3.scaleQuantile().domain(domain).range(d3.schemeReds[7]);
-  const rewoundFeatures = rewind(data.features);
+  const rewoundFeatures = rewind(regions.features);
 
   const svg = container
     .append("svg")

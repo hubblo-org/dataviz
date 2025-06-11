@@ -16,7 +16,19 @@ export function treemapLogo(fpath: string, legendId: string, logoId: string) {
   }
 }
 
-// Modified from the example provided in the D3 gallery: https://observablehq.com/@d3/treemap/2
+/** Renders a treemap from the provided data structure.
+ *
+ * @remarks
+ *
+ * The data structure to be rendered as a treemap must be modified, if necessary, to be parsed
+ * as a tree of nodes (containing leaves) or leaves (containing values).
+ * Modified from the example provided in the D3 gallery: {@link https://observablehq.com/@d3/treemap/2}
+ *
+ * @param source - A string designating the DOM element where the treemap will be rendered.
+ * @param tree - The data structure, hierarchized as a tree of nodes or leaves.
+ * @param width - The treemap width, in pixels.
+ * @param height - The treemap height, in pixels.
+ */
 export function treemap(source: string, tree: Node, width: number, height: number) {
   const treemapLegendId = `#${source}-treemap-legend`;
   const treemapId = `#${source}-treemap`;

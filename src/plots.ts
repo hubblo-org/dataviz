@@ -5,7 +5,6 @@ import {
   axisY,
   barX,
   dot,
-  formatIsoDate,
   gridY,
   groupY,
   line,
@@ -16,27 +15,16 @@ import {
   text
 } from "@observablehq/plot";
 
-interface ImpactFactor {
-  impactCriterion: string;
-  amount: number;
-}
-
-interface ImpactFactorWithScope {
-  scope: string;
-  amount: number;
-}
-
-interface Axes {
-  x: string;
-  y: string;
-}
-
-export function assignAxes(impactFactor: ImpactFactor | ImpactFactorWithScope) {
-  const keys = Object.keys(impactFactor);
-  const axes: Axes = { x: keys[1], y: keys[0] };
-  return axes;
-}
-
+/** Renders a bar plot, with each bar aligned horizontally.
+ *
+ * @param nodeId - The DOM element where the plot will be rendered.
+ * @param data - The data structure to be rendered as a plot.
+ * @param width - The plot width, in pixels.
+ * @param height - The plot height, in pixels.
+ * @param xLabel - The data property to be rendered on the x axis.
+ * @param yLabel - The data property to be rendered on the y axis.
+ * @param lollipop - If true, the rendered bar will be a {@link https://www.data-to-viz.com/graph/lollipop.html | lollipop}
+ */
 export function horizontalBarPlot<Type>(
   nodeId: string,
   data: Type,
@@ -94,11 +82,26 @@ export function addLogo(nodeId: string, logo: string) {
   logoDiv.append("span").text("Hubblo").attr("class", "logo");
 }
 
-// Renders a bat plot with stacked values, with keys provided as arguments (`yLabel` and `xLabel`).
-// Observable can count and stack values, allowing to get part of a whole represented as a share of the
-// rendered stacked bar. `fillLabel` is not to be provided in that case.
-// In other cases, one might want to fill each bar with stacked values computed from another data field,
-// to fill each share of the rendered bar with. `fillLabel` indicates that field.  
+/** Renders a bar plot, with each bar with stacked values.
+ *
+ * @remarks
+ *
+ * This bar plot allow showing parts of a whole in each rectangular bar.
+ * Renders a bat plot with stacked values, with keys provided as arguments (`yLabel` and `xLabel`).
+ * Observable can count and stack values, allowing to get part of a whole represented as a share of the
+ * rendered stacked bar. `fillLabel` is not to be provided in that case.
+ * In other cases, one might want to fill each bar with stacked values computed from another data field,
+ * to fill each share of the rendered bar with. `fillLabel` indicates that field.
+ *
+ * @param nodeId - The DOM element where the plot will be rendered.
+ * @param data - The data structure to be rendered as a plot.
+ * @param width - The plot width, in pixels.
+ * @param height - The plot height, in pixels.
+ * @param domains - The different categories representing parts of a whole.
+ * @param xLabel - The data property to be rendered on the x axis.
+ * @param yLabel - The data property to be rendered on the y axis.
+ * @param fillLabel - The third data property, representing part of a whole.
+ */
 export function stackedBarPlot<Type>(
   nodeId: string,
   data: Type,
@@ -107,7 +110,7 @@ export function stackedBarPlot<Type>(
   domains: string[],
   xLabel: string,
   yLabel: string,
-  fillLabel?: string,
+  fillLabel?: string
 ) {
   let div = document.querySelector(nodeId);
   div?.firstChild?.remove();
@@ -149,14 +152,23 @@ export function stackedBarPlot<Type>(
     className: "plot",
     color: { legend: true, domain: domains },
     x: { percent: true },
-    marks: fillLabel ? fillOptions : countOptions 
+    marks: fillLabel ? fillOptions : countOptions
   });
 
   div.append(barPlot);
 }
 
-// Renders a line chart or a multiple line chart.
-// Specify the `zDimension` to identify the key to group data with and render multiple lines in the chart.
+/** Renders a line or multi-line chart.
+ *
+ * @param nodeId - The DOM element where the plot will be rendered.
+ * @param data - The data structure to be rendered on the chart.
+ * @param width - The plot width, in pixels.
+ * @param height - The plot height, in pixels.
+ * @param xLabel - The data property to be rendered on the x axis.
+ * @param yLabel - The data property to be rendered on the y axis.
+ * @param zDimension - The third data property allowing the grouping of data and rendering multiple lines.
+ *
+ */
 export function lineChart<Type>(
   nodeId: string,
   data: Type,
