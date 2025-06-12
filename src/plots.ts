@@ -2,16 +2,19 @@ import type { Data, PlotOptions } from "@observablehq/plot";
 import { select } from "d3";
 import {
   areaY,
+  axisFy,
   axisX,
   axisY,
   barX,
   dot,
+  frame,
   gridY,
   groupY,
   line,
   plot,
   ruleX,
   ruleY,
+  selectFirst,
   selectLast,
   stackY,
   text
@@ -218,6 +221,7 @@ export function lineChart<Type>(
 
   if (div) {
     const lineChart = plot({
+      color: { legend: true },
       height: height,
       marginLeft: 0,
       round: true,
@@ -231,7 +235,15 @@ export function lineChart<Type>(
   }
 }
 
-/** Renders a stacked area chart. 
+/** Renders a stacked area chart.
+ *
+ * @remarks
+ *
+ * One can use a stacked area chart when wanting to show the distribution of distinct
+ * groups among a whole. It is not so useful when one wants to show the individual evolution
+ * of each group {@link https://www.data-to-viz.com/graph/stackedarea.html}. A multi-line chart
+ * or a group of individual line chart / area chart can be an alternative in that case. Therefore,
+ * when not normalized, each data group will be its distinct area chart.
  *
  * @param nodeId - The DOM element where the plot will be rendered.
  * @param data - The data structure to be rendered on the chart.
@@ -240,7 +252,7 @@ export function lineChart<Type>(
  * @param xLabel - The data property to be rendered on the x axis.
  * @param yLabel - The data property to be rendered on the y axis.
  * @param zDimension - The third data property allowing the grouping of data on the chart.
- * @param normalize - If true, data is normalized and each area represents part of the whole.
+ * @param normalize - If true, data is normalized and the chart is stacked.
  *
  */
 export function areaChart<Type>(
@@ -256,32 +268,40 @@ export function areaChart<Type>(
   const plotOptions: PlotOptions = {
     width: width,
     height: height,
-    color: { legend: true },
     marginLeft: 0,
-    round: true,
-    style: "overflow:visible",
-    x: { label: null, insetLeft: 36, type: "time", ticks: "year" }
+    style: "overflow:visible"
   };
 
   if (normalize) {
+    plotOptions.color = { legend: true };
+    plotOptions.round = true;
+    plotOptions.x = { label: null, insetLeft: 36, type: "time", ticks: "year" };
     plotOptions.y = { label: "↑ Share (%)", percent: true };
     plotOptions.marks = [
       areaY(
         data as Data,
         stackY(
           { offset: "normalize", order: zDimension, reverse: true },
-          { x: xLabel, y: yLabel, fill: zDimension, title: zDimension, order: "group" }
+          { x: xLabel, y: yLabel, fill: zDimension, order: "group" }
         )
       ),
       ruleY([0, 1])
     ];
   } else {
+    plotOptions.y = { grid: true, label: null };
     plotOptions.marks = [
-      areaY(
+      axisFy({ label: null, text: null }),
+      areaY(data as Data, {
+        x: (d) => new Date(d[xLabel]),
+        y: yLabel,
+        fy: zDimension,
+        fill: zDimension
+      }),
+      text(
         data as Data,
-        stackY({ x: xLabel, y: yLabel, fill: zDimension, title: zDimension, order: "group" })
+        selectFirst({ text: zDimension, fy: zDimension, frameAnchor: "top-left", dx: 6, dy: 6 })
       ),
-      ruleY([0, 1])
+      frame()
     ];
   }
   const div = document.querySelector(nodeId);
