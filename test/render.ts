@@ -13,7 +13,12 @@ plotsOptions.forEach((plot) => {
 
 function renderPlot() {
   const selectedPlot = (plotSelection as HTMLSelectElement).value;
-  document.getElementById("render-plot")?.getElementsByTagName("div")[0]?.remove();
+  const renderPlot = document.getElementById("render-plot");
+  if (renderPlot) {
+    renderPlot.getElementsByTagName("div")[0]?.remove();
+    renderPlot.innerHTML = "";
+  }
+
   plots[selectedPlot]();
 }
 
