@@ -1,6 +1,7 @@
-import type { Data } from "@observablehq/plot";
+import type { Data, PlotOptions } from "@observablehq/plot";
 import { select } from "d3";
 import {
+  areaY,
   axisX,
   axisY,
   barX,
@@ -12,6 +13,7 @@ import {
   ruleX,
   ruleY,
   selectLast,
+  stackY,
   text
 } from "@observablehq/plot";
 
@@ -191,7 +193,13 @@ export function lineChart<Type>(
       lineAnchor: "bottom"
     }),
     ruleY([0]),
-    line(data as Data, { x: xLabel, y: yLabel, z: zDimension, markerEnd: "dot" })
+    line(data as Data, {
+      x: xLabel,
+      y: yLabel,
+      z: zDimension,
+      markerEnd: "dot",
+      stroke: zDimension
+    })
   ];
 
   const multiLineMarks = lineMarks.concat([
@@ -220,5 +228,66 @@ export function lineChart<Type>(
     });
 
     div.append(lineChart);
+  }
+}
+
+/** Renders a stacked area chart. 
+ *
+ * @param nodeId - The DOM element where the plot will be rendered.
+ * @param data - The data structure to be rendered on the chart.
+ * @param width - The plot width, in pixels.
+ * @param height - The plot height, in pixels.
+ * @param xLabel - The data property to be rendered on the x axis.
+ * @param yLabel - The data property to be rendered on the y axis.
+ * @param zDimension - The third data property allowing the grouping of data on the chart.
+ * @param normalize - If true, data is normalized and each area represents part of the whole.
+ *
+ */
+export function areaChart<Type>(
+  nodeId: string,
+  data: Type,
+  width: number,
+  height: number,
+  xLabel: string,
+  yLabel: string,
+  zDimension: string,
+  normalize?: boolean
+) {
+  const plotOptions: PlotOptions = {
+    width: width,
+    height: height,
+    color: { legend: true },
+    marginLeft: 0,
+    round: true,
+    style: "overflow:visible",
+    x: { label: null, insetLeft: 36, type: "time", ticks: "year" }
+  };
+
+  if (normalize) {
+    plotOptions.y = { label: "↑ Share (%)", percent: true };
+    plotOptions.marks = [
+      areaY(
+        data as Data,
+        stackY(
+          { offset: "normalize", order: zDimension, reverse: true },
+          { x: xLabel, y: yLabel, fill: zDimension, title: zDimension, order: "group" }
+        )
+      ),
+      ruleY([0, 1])
+    ];
+  } else {
+    plotOptions.marks = [
+      areaY(
+        data as Data,
+        stackY({ x: xLabel, y: yLabel, fill: zDimension, title: zDimension, order: "group" })
+      ),
+      ruleY([0, 1])
+    ];
+  }
+  const div = document.querySelector(nodeId);
+  div?.firstChild?.remove();
+  if (div) {
+    const areaChart = plot(plotOptions);
+    div.append(areaChart);
   }
 }
