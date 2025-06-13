@@ -221,7 +221,6 @@ export function lineChart<Type>(
 
   if (div) {
     const lineChart = plot({
-      color: { legend: true },
       height: height,
       marginLeft: 0,
       round: true,
