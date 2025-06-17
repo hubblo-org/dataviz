@@ -109,15 +109,15 @@ export function addLogo(nodeId: string, logo: string) {
  */
 export function stackedBarPlot<Type>(
   nodeId: string,
-  data: Type,
+  data: Type[],
   width: number,
   height: number,
-  domains: string[],
+  domains: string[] | number[],
   xLabel: string,
   yLabel: string,
   fillLabel?: string
 ) {
-  let div = document.querySelector(nodeId);
+  let div = document.querySelector(`#${nodeId}`);
   div?.firstChild?.remove();
 
   const countOptions = [
@@ -141,19 +141,24 @@ export function stackedBarPlot<Type>(
   const fillOptions = [
     axisY({ fontSize: 12, label: null, marginLeft: 60 }),
     axisX({ marginBottom: 48 }),
-    barX(data as Data, {
-      y: yLabel,
-      x: xLabel,
-      fill: fillLabel,
-      order: domains,
-      offset: "normalize",
-      tip: true
-    })
+    barX(
+      data as Data,
+      groupY(
+        { x: "count" },
+        {
+          fill: fillLabel,
+          y: yLabel,
+          sort: { y: "x", reverse: true, color: "width" },
+          tip: true,
+          offset: "normalize"
+        }
+      )
+    )
   ];
-
   const barPlot = plot({
     width: width,
     height: height,
+    style: "overflow:visible",
     className: "plot",
     color: { legend: true, domain: domains },
     x: { percent: true },
@@ -161,6 +166,33 @@ export function stackedBarPlot<Type>(
   });
 
   div.append(barPlot);
+
+  if (fillLabel) {
+    const selectId = `${nodeId}-select`;
+    const divForSelect = select(`#${nodeId}`).select("figure").select("div").append("div");
+
+    function isNotAnAxys(value) {
+      if (value === xLabel) {
+        return false;
+      } else if (value === yLabel) {
+        return false;
+      }
+      return true;
+    }
+
+    divForSelect.append("select").attr("id", selectId);
+    const options = Object.keys(data[0]).filter(isNotAnAxys);
+    options.forEach((option) =>
+      select(`#${selectId}`).append("option").attr("value", option).text(option)
+    );
+
+    const selectElement = document.querySelector(selectId);
+    selectElement.addEventListener("change", function () {
+      const selectedProperty = (this as HTMLSelectElement).value;
+      const fieldDomains = [...new Set(data.map((element: Type) => element[selectedProperty]))];
+      stackedBarPlot(nodeId, data, width, height, fieldDomains, xLabel, yLabel, selectedProperty);
+    });
+  }
 }
 
 /** Renders a line or multi-line chart.
