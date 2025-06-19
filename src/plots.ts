@@ -20,6 +20,10 @@ import {
   text
 } from "@observablehq/plot";
 
+function center(nodeId: string, width: number) {
+  select(`#${nodeId}`).attr("style", `margin:auto; width: ${width}px`);
+}
+
 /** Renders a bar plot, with each bar aligned horizontally.
  *
  * @param nodeId - The DOM element where the plot will be rendered.
@@ -91,6 +95,7 @@ export function addSelect<Type>(
   nodeId: string,
   xLabel: string,
   yLabel: string,
+  width: number,
   data: Type
 ): string {
   const selectContainerId = `${nodeId}-select-container`;
@@ -99,10 +104,8 @@ export function addSelect<Type>(
 
   if (!divForSelect) {
     const parent = document.getElementById(nodeId).parentElement.nodeName;
-    const divForSelect = select(parent)
-      .append("div")
-      .attr("id", selectContainerId)
-      .attr("style", "margin-left: auto");
+    const divForSelect = select(parent).append("div").attr("id", selectContainerId);
+    center(selectContainerId, width);
 
     const isNotAnAxis = (value: string) => {
       if (value === xLabel || value == yLabel) {
@@ -160,7 +163,7 @@ export function stackedBarPlot<Type>(
 ) {
   let div = document.querySelector(`#${nodeId}`);
   div.innerHTML = "";
-  select(`#${nodeId}`).attr("style", `width: ${width}px;`);
+  center(nodeId, width);
 
   const countOptions = [
     axisY({ fontSize: 12, label: null, marginLeft: 60 }),
@@ -210,7 +213,7 @@ export function stackedBarPlot<Type>(
   div.append(barPlot);
 
   if (fillLabel) {
-    const selectId = addSelect(nodeId, xLabel, yLabel, data);
+    const selectId = addSelect(nodeId, xLabel, yLabel, width, data);
 
     const selectElement: HTMLSelectElement = document.querySelector(`#${selectId}`);
     selectElement.addEventListener("change", function () {
@@ -219,12 +222,7 @@ export function stackedBarPlot<Type>(
       const option = document.getElementById(selectedProperty);
       (option as HTMLOptionElement).selected = true;
 
-      const fieldDomains = [
-        ...new Set(
-          data
-            .map((element: Type) => element[selectedProperty])
-        )
-      ];
+      const fieldDomains = [...new Set(data.map((element: Type) => element[selectedProperty]))];
       stackedBarPlot(nodeId, data, width, height, fieldDomains, xLabel, yLabel, selectedProperty);
     });
   }
@@ -335,10 +333,11 @@ export function areaChart<Type>(
     width: width,
     height: height,
     marginLeft: 0,
-    style: "overflow:visible"
+    style: "overflow:visible;"
   };
 
   if (normalize) {
+    center(nodeId, width);
     plotOptions.color = { legend: true };
     plotOptions.round = true;
     plotOptions.x = { label: null, insetLeft: 36, type: "time", ticks: "year" };
@@ -370,7 +369,7 @@ export function areaChart<Type>(
       frame()
     ];
   }
-  const div = document.querySelector(nodeId);
+  const div = document.querySelector(`#${nodeId}`);
   div?.firstChild?.remove();
   if (div) {
     const areaChart = plot(plotOptions);

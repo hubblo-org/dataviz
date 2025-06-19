@@ -76,12 +76,12 @@ export function renderAreaChart() {
   checkbox.addEventListener("change", function () {
     if (this.checked) {
       normalize = true;
-      areaChart(`#${plotId}`, multiLines, 800, 600, "date", "number", "group", normalize);
+      areaChart(plotId, multiLines, 800, 600, "date", "number", "group", normalize);
     } else {
       normalize = false;
-      areaChart(`#${plotId}`, multiLines, 800, 600, "date", "number", "group", normalize);
+      areaChart(plotId, multiLines, 800, 600, "date", "number", "group", normalize);
     }
   });
 
-  areaChart(`#${plotId}`, multiLines, 800, 600, "date", "number", "group", normalize);
+  areaChart(plotId, multiLines, 800, 600, "date", "number", "group", normalize);
 }
