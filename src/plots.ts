@@ -87,6 +87,47 @@ export function addLogo(nodeId: string, logo: string) {
   logoDiv.append("span").text("Hubblo").attr("class", "logo");
 }
 
+export function addSelect<Type>(
+  nodeId: string,
+  xLabel: string,
+  yLabel: string,
+  data: Type
+): string {
+  const selectContainerId = `${nodeId}-select-container`;
+  const selectId = `${nodeId}-select`;
+  const divForSelect = document.querySelector(`#${selectContainerId}`);
+
+  if (!divForSelect) {
+    const parent = document.getElementById(nodeId).parentElement.nodeName;
+    const divForSelect = select(parent)
+      .append("div")
+      .attr("id", selectContainerId)
+      .attr("style", "margin-left: auto");
+
+    const isNotAnAxis = (value: string) => {
+      if (value === xLabel || value == yLabel) {
+        return false;
+      }
+      return true;
+    };
+
+    const selectStyle =
+      "background: 0 0; position: relative; border: 1px solid hsla(240, 6%, 87%, 1); border-radius: 4px; padding: 0.425em 1em 0.45em; min-height: 1.5rem; font: inherit;";
+    divForSelect
+      .append("label")
+      .attr("for", selectId)
+      .text("Select a property for value distribution: ");
+
+    divForSelect.append("select").attr("id", selectId).attr("style", selectStyle);
+    const options = Object.keys(data[0]).filter(isNotAnAxis);
+    options.forEach((option) =>
+      select(`#${selectId}`).append("option").attr("value", option).attr("id", option).text(option)
+    );
+
+    return selectId;
+  }
+}
+
 /** Renders a bar plot, with each bar with stacked values.
  *
  * @remarks
@@ -118,7 +159,8 @@ export function stackedBarPlot<Type>(
   fillLabel?: string
 ) {
   let div = document.querySelector(`#${nodeId}`);
-  div?.firstChild?.remove();
+  div.innerHTML = "";
+  select(`#${nodeId}`).attr("style", `width: ${width}px;`);
 
   const countOptions = [
     axisY({ fontSize: 12, label: null, marginLeft: 60 }),
@@ -168,28 +210,21 @@ export function stackedBarPlot<Type>(
   div.append(barPlot);
 
   if (fillLabel) {
-    const selectId = `${nodeId}-select`;
-    const divForSelect = select(`#${nodeId}`).select("figure").select("div").append("div");
+    const selectId = addSelect(nodeId, xLabel, yLabel, data);
 
-    function isNotAnAxys(value) {
-      if (value === xLabel) {
-        return false;
-      } else if (value === yLabel) {
-        return false;
-      }
-      return true;
-    }
-
-    divForSelect.append("select").attr("id", selectId);
-    const options = Object.keys(data[0]).filter(isNotAnAxys);
-    options.forEach((option) =>
-      select(`#${selectId}`).append("option").attr("value", option).text(option)
-    );
-
-    const selectElement = document.querySelector(selectId);
+    const selectElement: HTMLSelectElement = document.querySelector(`#${selectId}`);
     selectElement.addEventListener("change", function () {
-      const selectedProperty = (this as HTMLSelectElement).value;
-      const fieldDomains = [...new Set(data.map((element: Type) => element[selectedProperty]))];
+      const selectedProperty = this.value;
+      selectElement.value = selectedProperty;
+      const option = document.getElementById(selectedProperty);
+      (option as HTMLOptionElement).selected = true;
+
+      const fieldDomains = [
+        ...new Set(
+          data
+            .map((element: Type) => element[selectedProperty])
+        )
+      ];
       stackedBarPlot(nodeId, data, width, height, fieldDomains, xLabel, yLabel, selectedProperty);
     });
   }
