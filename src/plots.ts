@@ -156,7 +156,7 @@ export function stackedBarPlot<Type>(
   data: Type[],
   width: number,
   height: number,
-  domains: string[] | number[],
+  domains: (string | number)[],
   xLabel: string,
   yLabel: string,
   fillLabel?: string
