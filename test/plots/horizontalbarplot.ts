@@ -19,7 +19,14 @@ function getRandomInt(max: number) {
   return Math.floor(Math.random() * max);
 }
 
-const dcData = [
+interface DC {
+  type: string;
+  status: string;
+  power: number | string;
+  waterUsage: number | string;
+}
+
+const dcData: DC[] = [
   { type: "colocation", status: "open", power: getRandomInt(10), waterUsage: getRandomInt(15) },
   { type: "colocation", status: "open", power: getRandomInt(10), waterUsage: getRandomInt(15) },
   { type: "colocation", status: "open", power: getRandomInt(10), waterUsage: getRandomInt(15) },
@@ -79,7 +86,25 @@ export function renderStackedBarPlotWithFillLabel() {
   plotDiv.setAttribute("id", plotId);
   mainDiv?.appendChild(plotDiv);
 
-  const domains = [...new Set(dcData.map((dc) => dc.power))];
-
-  stackedBarPlot(plotId, dcData, 800, 600, domains, "status", "type", "power");
+  const groupedData = dcData.map((dc) => {
+    const power = dc.power as number;
+    const wu = dc.waterUsage as number;
+    if (power < 3) {
+      dc.power = "low";
+    } else if (power > 3 && power < 6) {
+      dc.power = "average";
+    } else {
+      dc.power = "high";
+    }
+    if (wu < 5) {
+      dc.waterUsage = "low";
+    } else if (wu > 5 && wu < 10) {
+      dc.waterUsage = "average";
+    } else {
+      dc.waterUsage = "high";
+    }
+    return dc;
+  });
+  const domains = [...new Set(groupedData.map((dc) => dc.power))];
+  stackedBarPlot(plotId, groupedData, 800, 600, domains, "status", "type", "power");
 }
