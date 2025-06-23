@@ -127,8 +127,8 @@ export function addSelect<Type>(
       select(`#${selectId}`).append("option").attr("value", option).attr("id", option).text(option)
     );
 
-    return selectId;
   }
+    return selectId;
 }
 
 /** Renders a bar plot, with each bar with stacked values.
