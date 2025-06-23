@@ -89,21 +89,27 @@ export function renderStackedBarPlotWithFillLabel() {
   const groupedData = dcData.map((dc) => {
     const power = dc.power as number;
     const wu = dc.waterUsage as number;
+
+    let normalizedPower: string;
+    let normalizedWaterUsage: string;
+
     if (power < 3) {
-      dc.power = "low";
+      normalizedPower = "low";
     } else if (power > 3 && power < 6) {
-      dc.power = "average";
+      normalizedPower = "average";
     } else {
-      dc.power = "high";
+      normalizedPower = "high";
     }
+
     if (wu < 5) {
-      dc.waterUsage = "low";
+      normalizedWaterUsage = "low";
     } else if (wu > 5 && wu < 10) {
-      dc.waterUsage = "average";
+      normalizedWaterUsage = "average";
     } else {
-      dc.waterUsage = "high";
+      normalizedWaterUsage = "high";
     }
-    return dc;
+
+    return { ...dc, power: normalizedPower, waterUsage: normalizedWaterUsage };
   });
   const domains = [...new Set(groupedData.map((dc) => dc.power))];
   stackedBarPlot(plotId, groupedData, 800, 600, domains, "status", "type", "power");
