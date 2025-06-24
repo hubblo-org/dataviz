@@ -1,5 +1,5 @@
 import type { Data, PlotOptions } from "@observablehq/plot";
-import { select } from "d3";
+import { extent, scaleLinear, select } from "d3";
 import {
   areaY,
   axisFy,
@@ -11,6 +11,7 @@ import {
   gridY,
   groupY,
   line,
+  lineX,
   plot,
   ruleX,
   ruleY,
@@ -64,9 +65,8 @@ export function addSelect<Type>(
     options.forEach((option) =>
       select(`#${selectId}`).append("option").attr("value", option).attr("id", option).text(option)
     );
-
   }
-    return selectId;
+  return selectId;
 }
 
 /** Renders a stacked area chart.
@@ -278,6 +278,72 @@ export function lineChart<Type>(
 
     div.append(lineChart);
   }
+}
+
+export function parallelCoordinates<Type>(
+  nodeId: string,
+  width: number,
+  height: number,
+  dimensions: string[],
+  property: string,
+  data: Type[]
+) {
+  let div = document.querySelector(`#${nodeId}`);
+  div?.firstChild?.remove();
+  center(nodeId, width);
+
+  const points = dimensions.flatMap((dimension) =>
+    data.map(
+      (object, index) => {
+        const result = { index, dimension, value: object[dimension] };
+        return result;
+      }
+    )
+  );
+
+  const scales = new Map(
+    dimensions.map((dimension) => [
+      dimension,
+      scaleLinear().domain(extent(data, (d) => d[dimension]))
+    ])
+  );
+
+  const ticks = dimensions.flatMap((dimension) => {
+    return scales
+      .get(dimension)
+      .ticks(dimensions.length)
+      .map((value) => ({ dimension, value }));
+  });
+
+  const parallelCoordinates = plot({
+    width: width,
+    height: height,
+    style: "overflow:visible",
+    x: { axis: null },
+    y: { domain: dimensions, label: null },
+    color: { scheme: "BrBG", type: "linear", reverse: true, legend: true },
+    marks: [
+      ruleY(dimensions),
+      lineX(points as Data, {
+        x: ({ dimension, value }) => scales.get(dimension)(value),
+        y: "dimension",
+        z: "index",
+        stroke: ({ index }) => data[index][property],
+        strokeWidth: 0.5,
+        strokeOpacity: 0.5
+      }),
+      text(ticks, {
+        x: ({ dimension, value }) => scales.get(dimension)(value),
+        y: "dimension",
+        text: "value",
+        fill: "black",
+        stroke: "white",
+        strokeWidth: 3
+      })
+    ]
+  });
+
+  div.append(parallelCoordinates);
 }
 
 /** Renders a bar plot, with each bar with stacked values.
