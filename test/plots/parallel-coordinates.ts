@@ -1,4 +1,4 @@
-import { addSelect ,parallelCoordinates } from "../../src";
+import { parallelCoordinates } from "../../src";
 
 function getRandomInt(max: number) {
   return Math.floor(Math.random() * max);
@@ -298,15 +298,6 @@ export function renderParallelCoordinates() {
   };
 
   const dimensions = Object.keys(dcData[0]).filter(isNotAnAxis);
-  parallelCoordinates(plotId, 800, 600, dimensions, "waterUsage", dcData);
-  const selectId = addSelect(plotId, "type", "status", 800, dcData);
-
-  const selectElement: HTMLSelectElement = document.querySelector(`#${selectId}`)!;
-  selectElement.addEventListener("change", function () {
-    const selectedProperty = this.value;
-    selectElement.value = selectedProperty;
-    const option = document.getElementById(selectedProperty);
-    (option as HTMLOptionElement).selected = true;
-  parallelCoordinates(plotId, 800, 600, dimensions, selectedProperty, dcData);
-  });
+  const domains = [...new Set(dcData.map((element) => element.type))];
+  parallelCoordinates(plotId, 800, 600, dimensions, domains, dcData);
 }
