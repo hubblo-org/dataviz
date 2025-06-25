@@ -1,5 +1,5 @@
 import type { Data, PlotOptions } from "@observablehq/plot";
-import { extent, scaleLinear, select } from "d3";
+import { extent, scaleLinear, scaleOrdinal, schemeTableau10, select } from "d3";
 import {
   areaY,
   axisFy,
@@ -11,7 +11,7 @@ import {
   gridY,
   groupY,
   line,
-  lineX,
+  lineY,
   plot,
   ruleX,
   ruleY,
@@ -20,6 +20,11 @@ import {
   stackY,
   text
 } from "@observablehq/plot";
+
+export type ColorFunction = (color: string) => string;
+
+const selectStyle =
+  "background: 0 0; position: relative; border: 1px solid hsla(240, 6%, 87%, 1); border-radius: 4px; padding: 0.425em 1em 0.45em; min-height: 1.5rem; font: inherit;";
 
 export function addLogo(nodeId: string, logo: string) {
   // When a legend is created with the generated plot, a figure element is added to the selected div.
@@ -149,6 +154,54 @@ export function areaChart<Type>(
 
 function center(nodeId: string, width: number) {
   select(`#${nodeId}`).attr("style", `margin:auto; width: ${width}px`);
+}
+
+export function highlight(
+  domains: string[],
+  color: ColorFunction
+): {
+  label: HTMLLabelElement;
+  select: HTMLSelectElement;
+} {
+  const highlightElement = document.createElement("select");
+  const highlightLabel = document.createElement("label");
+  const initialSelection = "none";
+  highlightLabel.setAttribute("for", "highlight-category");
+  highlightLabel.textContent = "Select a category to highlight: ";
+  highlightElement.setAttribute("id", "highlight-category");
+  highlightElement.setAttribute("style", selectStyle);
+
+  highlightElement.addEventListener("change", function () {
+    const selectedProperty: string = this.value;
+    select(".line")
+      .selectAll("path")
+      .each(function () {
+        const line = select(this);
+        const title = line.select("title");
+
+        if (title.text() === selectedProperty || selectedProperty === initialSelection) {
+          line.attr("stroke", color(title.text()));
+        } else if (title.text() !== selectedProperty && selectedProperty !== initialSelection) {
+          line.attr("stroke", "lightgrey");
+        }
+      });
+  });
+
+  const options = domains;
+  options.push(initialSelection);
+  const optionsElements: HTMLOptionElement[] = options.map((option: string) => {
+    const optionNode = document.createElement("option");
+    optionNode.setAttribute("value", option);
+    optionNode.setAttribute("id", option);
+    optionNode.textContent = option;
+    if (option === initialSelection) {
+      optionNode.selected = true;
+    }
+    return optionNode;
+  });
+  optionsElements.forEach((element) => highlightElement.append(element));
+
+  return { label: highlightLabel, select: highlightElement };
 }
 
 /** Renders a bar plot, with each bar aligned horizontally.
@@ -285,20 +338,20 @@ export function parallelCoordinates<Type>(
   width: number,
   height: number,
   dimensions: string[],
-  property: string,
+  domains: string[],
   data: Type[]
 ) {
   let div = document.querySelector(`#${nodeId}`);
   div?.firstChild?.remove();
   center(nodeId, width);
 
+  const color = scaleOrdinal().domain(domains).range(schemeTableau10);
+
   const points = dimensions.flatMap((dimension) =>
-    data.map(
-      (object, index) => {
-        const result = { index, dimension, value: object[dimension] };
-        return result;
-      }
-    )
+    data.map((object, index) => {
+      const result = { index, dimension, value: object[dimension] };
+      return result;
+    })
   );
 
   const scales = new Map(
@@ -319,22 +372,23 @@ export function parallelCoordinates<Type>(
     width: width,
     height: height,
     style: "overflow:visible",
-    x: { axis: null },
-    y: { domain: dimensions, label: null },
-    color: { scheme: "BrBG", type: "linear", reverse: true, legend: true },
+    y: { axis: null },
+    x: { label: null, domain: dimensions },
     marks: [
-      ruleY(dimensions),
-      lineX(points as Data, {
-        x: ({ dimension, value }) => scales.get(dimension)(value),
-        y: "dimension",
+      ruleX(dimensions),
+      lineY(points as Data, {
+        className: "line",
+        y: ({ dimension, value }) => scales.get(dimension)(value),
+        x: "dimension",
         z: "index",
-        stroke: ({ index }) => data[index][property],
-        strokeWidth: 0.5,
-        strokeOpacity: 0.5
+        stroke: ({ index }) => color(data[index]["type"]),
+        strokeWidth: 2,
+        strokeOpacity: 1,
+        title: ({ index }) => data[index]["type"]
       }),
       text(ticks, {
-        x: ({ dimension, value }) => scales.get(dimension)(value),
-        y: "dimension",
+        y: ({ dimension, value }) => scales.get(dimension)(value),
+        x: "dimension",
         text: "value",
         fill: "black",
         stroke: "white",
@@ -343,8 +397,12 @@ export function parallelCoordinates<Type>(
     ]
   });
 
+  const highlightElements = highlight(domains, color as ColorFunction);
   div.append(parallelCoordinates);
+  div.append(highlightElements.label);
+  div.append(highlightElements.select);
 }
+
 
 /** Renders a bar plot, with each bar with stacked values.
  *
