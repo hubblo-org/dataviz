@@ -40,7 +40,8 @@ export function addSelect<Type>(
   xLabel: string,
   yLabel: string,
   width: number,
-  data: Type
+  data: Type,
+  initialOption: string
 ): string {
   const selectContainerId = `${nodeId}-select-container`;
   const selectId = `${nodeId}-select`;
@@ -58,18 +59,20 @@ export function addSelect<Type>(
       return true;
     };
 
-    const selectStyle =
-      "background: 0 0; position: relative; border: 1px solid hsla(240, 6%, 87%, 1); border-radius: 4px; padding: 0.425em 1em 0.45em; min-height: 1.5rem; font: inherit;";
     divForSelect
       .append("label")
       .attr("for", selectId)
       .text("Select a property for value distribution: ");
 
     divForSelect.append("select").attr("id", selectId).attr("style", selectStyle);
+
     const options = Object.keys(data[0]).filter(isNotAnAxis);
     options.forEach((option) =>
       select(`#${selectId}`).append("option").attr("value", option).attr("id", option).text(option)
     );
+
+    const selection = document.getElementById(`${initialOption}`);
+    (selection as HTMLOptionElement).selected = true;
   }
   return selectId;
 }
@@ -486,7 +489,7 @@ export function stackedBarPlot<Type>(
   div.append(barPlot);
 
   if (fillLabel) {
-    const selectId = addSelect(nodeId, xLabel, yLabel, width, data);
+    const selectId = addSelect(nodeId, xLabel, yLabel, width, data, fillLabel);
 
     const selectElement: HTMLSelectElement = document.querySelector(`#${selectId}`);
     selectElement.addEventListener("change", function () {
