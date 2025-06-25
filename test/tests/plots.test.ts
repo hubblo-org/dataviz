@@ -58,7 +58,7 @@ describe("highlight test suite", () => {
   function renderDiv() {
     const div = document.createElement("div");
     document.body.append(div);
-    const highlightElements = highlight(testDomains, color as ColorFunction);
+    const highlightElements = highlight("class", testDomains, color as ColorFunction);
     div.append(highlightElements.label);
     div.append(highlightElements.select);
   }

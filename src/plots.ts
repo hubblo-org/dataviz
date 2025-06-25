@@ -160,6 +160,7 @@ function center(nodeId: string, width: number) {
 }
 
 export function highlight(
+  className: string,
   domains: string[],
   color: ColorFunction
 ): {
@@ -176,7 +177,7 @@ export function highlight(
 
   highlightElement.addEventListener("change", function () {
     const selectedProperty: string = this.value;
-    select(".line")
+    select(`.${className}`)
       .selectAll("path")
       .each(function () {
         const line = select(this);
@@ -341,6 +342,7 @@ export function parallelCoordinates<Type>(
   width: number,
   height: number,
   dimensions: string[],
+  domain: string,
   domains: string[],
   data: Type[]
 ) {
@@ -371,6 +373,8 @@ export function parallelCoordinates<Type>(
       .map((value) => ({ dimension, value }));
   });
 
+  const lineClassName = "line";
+
   const parallelCoordinates = plot({
     width: width,
     height: height,
@@ -380,14 +384,14 @@ export function parallelCoordinates<Type>(
     marks: [
       ruleX(dimensions),
       lineY(points as Data, {
-        className: "line",
+        className: lineClassName,
         y: ({ dimension, value }) => scales.get(dimension)(value),
         x: "dimension",
         z: "index",
-        stroke: ({ index }) => color(data[index]["type"]),
+        stroke: ({ index }) => color(data[index][domain]),
         strokeWidth: 2,
         strokeOpacity: 1,
-        title: ({ index }) => data[index]["type"]
+        title: ({ index }) => data[index][domain]
       }),
       text(ticks, {
         y: ({ dimension, value }) => scales.get(dimension)(value),
@@ -400,12 +404,11 @@ export function parallelCoordinates<Type>(
     ]
   });
 
-  const highlightElements = highlight(domains, color as ColorFunction);
+  const highlightElements = highlight(lineClassName, domains, color as ColorFunction);
   div.append(parallelCoordinates);
   div.append(highlightElements.label);
   div.append(highlightElements.select);
 }
-
 
 /** Renders a bar plot, with each bar with stacked values.
  *

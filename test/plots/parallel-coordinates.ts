@@ -299,5 +299,5 @@ export function renderParallelCoordinates() {
 
   const dimensions = Object.keys(dcData[0]).filter(isNotAnAxis);
   const domains = [...new Set(dcData.map((element) => element.type))];
-  parallelCoordinates(plotId, 800, 600, dimensions, domains, dcData);
+  parallelCoordinates(plotId, 800, 600, dimensions, "type", domains, dcData);
 }
