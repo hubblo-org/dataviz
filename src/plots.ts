@@ -445,7 +445,7 @@ export function parallelCoordinates<Type>(
     width: width,
     height: height,
     style: "overflow:visible",
-    y: { axis: null },
+    y: { axis: null, grid: true },
     x: { label: null, domain: dimensions },
     marks: [
       ruleX(dimensions),
