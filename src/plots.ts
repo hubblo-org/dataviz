@@ -35,12 +35,21 @@ export function addLogo(nodeId: string, logo: string) {
   logoDiv.append("span").text("Hubblo").attr("class", "logo");
 }
 
+/** Renders an element allowing to select a dataset property to be represented visually.
+ *
+ * @param nodeId - The DOM element where the element will be rendered.
+ * @param data - The data structure represented on the plot.
+ * @param xLabel - The data property rendered on the x axis.
+ * @param yLabel - The data property rendered on the y axis.
+ * @param width - The plot width, in pixels.
+ * @param initialOption - The option to be selected after drawing the element.
+ */
 export function addSelect<Type>(
   nodeId: string,
+  data: Type,
   xLabel: string,
   yLabel: string,
   width: number,
-  data: Type,
   initialOption: string
 ): string {
   const selectContainerId = `${nodeId}-select-container`;
@@ -159,6 +168,15 @@ function center(nodeId: string, width: number) {
   select(`#${nodeId}`).attr("style", `margin:auto; width: ${width}px`);
 }
 
+/** Renders a select element allowing to hightlight the selected data group.
+ *
+ * For a given parent SVG path, select all children SVG paths and modify their stroke color
+ * in order to highlight them.
+ *
+ * @param className - The class name of the parent SVG path of all elements to modify.
+ * @param domains - The different data groups.
+ * @param color - The color function, associating a domain with a color.
+ */
 export function highlight(
   className: string,
   domains: string[],
@@ -337,14 +355,35 @@ export function lineChart<Type>(
   }
 }
 
+/** Renders a parallel coordinates plot.
+ *
+ * A parallel coordinates plot distribute all elements of a dataset, drawing
+ * a scale for each property and putting the value for an element as a point on
+ * that scale. This allows to have an immediate visual distribution of all absolute
+ * values for each property of an element.
+ * All elements of the dataset are grouped by a given category (a "domain"), allowing to create
+ * sub-groups of data and to highlight each of them when needed. For example, a whole dataset
+ * of animals can be grouped between "cats", "dogs", and "birds", which represent the "domains" of
+ * the dataset. And each individual item of the whole dataset has a set of properties, common to
+ * all items, which represent their "dimensions".
+ *
+ * @param nodeId - The DOM element where the plot will be rendered.
+ * @param data - The data structure to be rendered on the plot.
+ * @param width - The plot width, in pixels.
+ * @param height - The plot height, in pixels.
+ * @param dimensions - The properties of each element in the dataset.
+ * @param domains - The categories of the dataset.
+ * @param domain - The property identifying the categories of the dataset.
+ *
+ */
 export function parallelCoordinates<Type>(
   nodeId: string,
+  data: Type[],
   width: number,
   height: number,
   dimensions: string[],
   domain: string,
-  domains: string[],
-  data: Type[]
+  domains: string[]
 ) {
   let div = document.querySelector(`#${nodeId}`);
   div?.firstChild?.remove();
@@ -492,7 +531,7 @@ export function stackedBarPlot<Type>(
   div.append(barPlot);
 
   if (fillLabel) {
-    const selectId = addSelect(nodeId, xLabel, yLabel, width, data, fillLabel);
+    const selectId = addSelect(nodeId, data, xLabel, yLabel, width, fillLabel);
 
     const selectElement: HTMLSelectElement = document.querySelector(`#${selectId}`);
     selectElement.addEventListener("change", function () {

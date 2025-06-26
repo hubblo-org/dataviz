@@ -17,13 +17,13 @@ describe("addSelect test suite", () => {
 
   it("should create a select element with a label", () => {
     document.body.innerHTML = initialInnerHtml;
-    addSelect("plot-container", xLabel, yLabel, 800, testData, "property");
+    addSelect("plot-container", testData, xLabel, yLabel, 800, "property");
     expect(screen.getByLabelText(labelText)).toBeVisible();
   });
 
   it("should have options that are not the axis labels", () => {
     document.body.innerHTML = initialInnerHtml;
-    addSelect("plot-container", xLabel, yLabel, 800, testData, "property");
+    addSelect("plot-container", testData, xLabel, yLabel, 800, "property");
     const select = screen.getByLabelText(labelText);
     const options = within(select).getAllByRole("option");
     const isNotAnAxis = (value: string) => {
@@ -39,7 +39,7 @@ describe("addSelect test suite", () => {
   it("should set the select value as the selected property", async () => {
     const user = userEvent.setup();
     document.body.innerHTML = initialInnerHtml;
-    addSelect("plot-container", xLabel, yLabel, 800, testData, "property");
+    addSelect("plot-container", testData,xLabel, yLabel, 800,  "property");
     const select = screen.getByLabelText(labelText);
     const options: HTMLOptionElement[] = within(select).getAllByRole("option");
     expect(options[0]).toBeVisible();
