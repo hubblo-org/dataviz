@@ -35,7 +35,7 @@ export function addLogo(nodeId: string, logo: string) {
   logoDiv.append("span").text("Hubblo").attr("class", "logo");
 }
 
-/** Normalize all values of the provided properties of a dataset between 0 and 1. 
+/** Normalize all values of the provided properties of a dataset between 0 and 1.
  *
  * Certain data visualisations benefit from value normalization, especially in cases
  * where different properties are represented on the same graph. This method allows
@@ -184,7 +184,7 @@ export function areaChart<Type>(
     ];
   }
   const div = document.querySelector(`#${nodeId}`);
-  div?.firstChild?.remove();
+  div.innerHTML = "";
   if (div) {
     const areaChart = plot(plotOptions);
     div.append(areaChart);
@@ -273,7 +273,7 @@ export function horizontalBarPlot<Type>(
   lollipop: boolean
 ) {
   let div = document.querySelector(nodeId);
-  div?.firstChild?.remove();
+  div.innerHTML = "";
 
   if (div) {
     const lollipopMarks = [
@@ -332,7 +332,7 @@ export function lineChart<Type>(
   zDimension?: string
 ) {
   let div = document.querySelector(nodeId);
-  div?.firstChild?.remove();
+  div.innerHTML = "";
 
   const lineMarks = [
     gridY({ strokeDasharray: "0.75,2", strokeOpacity: 1 }),
@@ -413,7 +413,7 @@ export function parallelCoordinates<Type>(
   domains: string[]
 ) {
   let div = document.querySelector(`#${nodeId}`);
-  div?.firstChild?.remove();
+  div.innerHTML = "";
   center(nodeId, width);
 
   const color = scaleOrdinal().domain(domains).range(schemeTableau10);
