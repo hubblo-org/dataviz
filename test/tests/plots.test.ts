@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { screen, within } from "@testing-library/dom";
 import userEvent from "@testing-library/user-event";
-import { addSelect, ColorFunction, highlight } from "../../src/plots";
+import { addSelect, ColorFunction, highlight, minMaxScaling } from "../../src/plots";
 import { scaleOrdinal, schemeTableau10 } from "d3";
 
 const initialInnerHtml = `
@@ -39,7 +39,7 @@ describe("addSelect test suite", () => {
   it("should set the select value as the selected property", async () => {
     const user = userEvent.setup();
     document.body.innerHTML = initialInnerHtml;
-    addSelect("plot-container", testData,xLabel, yLabel, 800,  "property");
+    addSelect("plot-container", testData, xLabel, yLabel, 800, "property");
     const select = screen.getByLabelText(labelText);
     const options: HTMLOptionElement[] = within(select).getAllByRole("option");
     expect(options[0]).toBeVisible();
@@ -77,5 +77,39 @@ describe("highlight test suite", () => {
       (option) => option.textContent === "none"
     )[0];
     expect(noneOption.selected).toBeTruthy();
+  });
+});
+
+describe("minMaxScaling test suite", () => {
+  it("computes a value position on a scale, to be set between 0 and 1", () => {
+    const values = [
+      { value: 15 },
+      { value: 54 },
+      { value: 6 },
+      { value: 7 },
+      { value: 456 },
+      { value: 657 },
+      { value: 2 },
+      { value: 3 },
+      { value: 0 }
+    ];
+    const result = minMaxScaling(["value"], values);
+    expect(result[1].value).toEqual(0.08);
+  });
+  it("computes all value positions for each provided data property, without modifying other properties", () => {
+    const values = [
+      { type: "private", value: 15 },
+      { type: "private", value: 54 },
+      { type: "private", value: 6 },
+      { type: "private", value: 7 },
+      { type: "private", value: 456 },
+      { type: "private", value: 657 },
+      { type: "private", value: 2 },
+      { type: "private", value: 3 },
+      { type: "private", value: 0 }
+    ];
+    const result = minMaxScaling(["value"], values);
+    expect(result[1].value).toEqual(0.08);
+    expect(result[1].type).toEqual("private");
   });
 });

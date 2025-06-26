@@ -35,6 +35,33 @@ export function addLogo(nodeId: string, logo: string) {
   logoDiv.append("span").text("Hubblo").attr("class", "logo");
 }
 
+/** Normalize all values of the provided properties of a dataset between 0 and 1. 
+ *
+ * Certain data visualisations benefit from value normalization, especially in cases
+ * where different properties are represented on the same graph. This method allows
+ * to normalize all values of each element, after identifying the minimum and maximum values.
+ *
+ * @param dimensions - The different data properties to be normalized.
+ * @param data - The source dataset.
+ */
+export function minMaxScaling<Type>(dimensions: [keyof Type], data: Type[]): Type[] {
+  const scaledData = data.map((element) => {
+    let scaledDatum = { ...element };
+    dimensions.forEach((dimension) => {
+      if (typeof element[dimension] === "number") {
+        const values: number[] = data.map((element) => element[dimension] as number);
+        const min = Math.min(...values);
+        const max = Math.max(...values);
+        const result = (element[dimension] - min) / (max - min);
+        const rounded = parseFloat((Math.round(result * 100) / 100).toFixed(2));
+        (scaledDatum[dimension] as number) = rounded;
+      }
+    });
+    return scaledDatum;
+  });
+  return scaledData;
+}
+
 /** Renders an element allowing to select a dataset property to be represented visually.
  *
  * @param nodeId - The DOM element where the element will be rendered.
