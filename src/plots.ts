@@ -1,5 +1,5 @@
-import type { Data, PlotOptions } from "@observablehq/plot";
-import { extent, scaleLinear, scaleOrdinal, schemeTableau10, select } from "d3";
+import type { Data, Mark, Markish, PlotOptions } from "@observablehq/plot";
+import { extent, range, scaleLinear, scaleOrdinal, schemeTableau10, select } from "d3";
 import {
   areaY,
   axisFy,
@@ -413,7 +413,8 @@ export function parallelCoordinates<Type>(
   height: number,
   dimensions: string[],
   domain: string,
-  domains: string[]
+  domains: string[],
+  minMaxScale?: boolean
 ) {
   let div = document.querySelector(`#${nodeId}`);
   div.innerHTML = "";
@@ -444,33 +445,43 @@ export function parallelCoordinates<Type>(
 
   const lineClassName = "line";
 
+  const marks: Markish[] = [
+    ruleX(dimensions),
+    lineY(points as Data, {
+      className: lineClassName,
+      y: ({ dimension, value }) => scales.get(dimension)(value),
+      x: "dimension",
+      z: "index",
+      stroke: ({ index }) => color(data[index][domain]),
+      strokeWidth: 2,
+      strokeOpacity: 1,
+      title: ({ index }) => data[index][domain]
+    })
+  ];
+  const textForScales = text(ticks, {
+    y: ({ dimension, value }) => scales.get(dimension)(value),
+    x: "dimension",
+    fontSize: 14,
+    text: "value",
+    fill: "black",
+    stroke: "white",
+    strokeWidth: 5
+  });
+  const normalizedScale = axisY({ anchor: "left", interval: 0.1 });
+
+  if (!minMaxScale) {
+    marks.push(textForScales);
+  } else {
+    marks.push(normalizedScale);
+  }
+
   const parallelCoordinates = plot({
     width: width,
     height: height,
     style: "overflow:visible",
     y: { axis: null, grid: true },
     x: { label: null, domain: dimensions },
-    marks: [
-      ruleX(dimensions),
-      lineY(points as Data, {
-        className: lineClassName,
-        y: ({ dimension, value }) => scales.get(dimension)(value),
-        x: "dimension",
-        z: "index",
-        stroke: ({ index }) => color(data[index][domain]),
-        strokeWidth: 2,
-        strokeOpacity: 1,
-        title: ({ index }) => data[index][domain]
-      }),
-      text(ticks, {
-        y: ({ dimension, value }) => scales.get(dimension)(value),
-        x: "dimension",
-        text: "value",
-        fill: "black",
-        stroke: "white",
-        strokeWidth: 3
-      })
-    ]
+    marks: marks
   });
 
   const highlightElements = highlight(lineClassName, domains, color as ColorFunction);
