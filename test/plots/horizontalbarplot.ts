@@ -1,4 +1,5 @@
 import { horizontalBarPlot, stackedBarPlot } from "../../src";
+import { dcData } from "../data/data";
 
 const data = [
   { type: "string", value: 1 },
@@ -14,58 +15,6 @@ export function renderHorizontalBarPlot() {
 
   horizontalBarPlot(`#${plotId}`, data, 800, 600, "value", "type", true);
 }
-
-function getRandomInt(max: number) {
-  return Math.floor(Math.random() * max);
-}
-
-interface DC {
-  type: string;
-  status: string;
-  power: number | string;
-  waterUsage: number | string;
-}
-
-const dcData: DC[] = [
-  { type: "colocation", status: "open", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "colocation", status: "open", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "colocation", status: "open", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "colocation", status: "open", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "colocation", status: "open", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "colocation", status: "open", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "colocation", status: "open", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "colocation", status: "closed", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "colocation", status: "closed", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "colocation", status: "closed", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "colocation", status: "project", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "colocation", status: "project", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "colocation", status: "project", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "colocation", status: "project", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "colocation", status: "project", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "colocation", status: "project", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "colocation", status: "project", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "hyperscaler", status: "open", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "hyperscaler", status: "open", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "hyperscaler", status: "open", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "hyperscaler", status: "open", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "hyperscaler", status: "open", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "hyperscaler", status: "open", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "hyperscaler", status: "open", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "hyperscaler", status: "open", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "hyperscaler", status: "project", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "hyperscaler", status: "project", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "hyperscaler", status: "project", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "hyperscaler", status: "project", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "hyperscaler", status: "project", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "hyperscaler", status: "project", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "private", status: "project", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "private", status: "project", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "private", status: "project", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "private", status: "open", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "private", status: "closed", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "hyperscaler", status: "project", power: getRandomInt(10), waterUsage: getRandomInt(15) },
-  { type: "hyperscaler", status: "project", power: getRandomInt(10), waterUsage: getRandomInt(15) }
-];
 
 export function renderStackedBarPlot() {
   const plotId = "stacked-bar-plot";
