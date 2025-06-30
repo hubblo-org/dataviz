@@ -312,7 +312,6 @@ export function renderParallelCoordinates() {
   scaleCheckbox.addEventListener("change", function () {
     if (this.checked) {
       const scaledData = minMaxScaling(dimensions as [keyof DC], dcData);
-
       parallelCoordinates(plotId, scaledData, 800, 600, dimensions, "type", domains);
     } else {
       parallelCoordinates(plotId, dcData, 800, 600, dimensions, "type", domains);

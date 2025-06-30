@@ -237,7 +237,10 @@ export function highlight(
   });
 
   const options = domains;
-  options.push(initialSelection);
+  if (!options.includes(initialSelection)) {
+    options.push(initialSelection);
+  }
+
   const optionsElements: HTMLOptionElement[] = options.map((option: string) => {
     const optionNode = document.createElement("option");
     optionNode.setAttribute("value", option);
