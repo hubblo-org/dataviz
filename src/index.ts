@@ -6,6 +6,7 @@ export {
   horizontalBarPlot,
   minMaxScaling,
   parallelCoordinates,
+  scatterPlot,
   stackedBarPlot
 } from "./plots";
 export { treemap, treemapLogo } from "./treemap";

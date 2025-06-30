@@ -490,6 +490,42 @@ export function parallelCoordinates<Type>(
   div.append(highlightElements.select);
 }
 
+export function scatterPlot<Type>(
+  nodeId: string,
+  data: Type[],
+  width: number,
+  height: number,
+  xLabel: string,
+  yLabel: string,
+  domain: string,
+  domains: string[]
+) {
+  let div = document.querySelector(`#${nodeId}`);
+  div.innerHTML = "";
+  center(nodeId, width);
+
+  const channels = domains.reduce((domain, key) => ({ ...domain, [key]: `${key}` }), {});
+  const scatterplot = plot({
+    grid: true,
+    width,
+    height,
+    x: { label: xLabel },
+    y: { label: yLabel },
+    symbol: { legend: true },
+    marks: [
+      dot(data as Data, {
+        x: xLabel,
+        y: yLabel,
+        stroke: domain,
+        channels,
+        symbol: domain,
+        tip: true
+      })
+    ]
+  });
+
+  div.append(scatterplot);
+}
 /** Renders a bar plot, with each bar with stacked values.
  *
  * @remarks
