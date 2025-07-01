@@ -1,4 +1,3 @@
-
 function getRandomInt(max: number) {
   return Math.floor(Math.random() * max);
 }
@@ -280,16 +279,20 @@ export const dcData: DC[] = [
   }
 ];
 
-/* function generateName(): string {
-	let output: string = "";
-	let input: string = "abcdefghijklmnopqrstuvwxyz0123456789";
-
-
-
-}
-const dcDataWithNames = dcData.map((dc) => {
-	const dcWithName = {... dc};
-	dc.name = 
-
-
-}); */
+export const sourcesTargets = [
+  { source: "Nuclear", target: "Data centers", value: getRandomInt(500) },
+  { source: "Renewable", target: "Data centers", value: getRandomInt(500) },
+  { source: "Gas", target: "Data centers", value: getRandomInt(500) },
+  { source: "Water", target: "Data centers", value: getRandomInt(500) },
+  { source: "Refrigerant", target: "Data centers", value: getRandomInt(500) },
+  { source: "Nuclear", target: "Domestic appliances", value: getRandomInt(500) },
+  { source: "Renewable", target: "Domestic appliances", value: getRandomInt(500) },
+  { source: "Gas", target: "Domestic appliances", value: getRandomInt(500) },
+  { source: "Water", target: "Domestic appliances", value: getRandomInt(500) },
+  { source: "Refrigerant", target: "Domestic appliances", value: getRandomInt(500) },
+  { source: "Nuclear", target: "Industry", value: getRandomInt(500) },
+  { source: "Renewable", target: "Industry", value: getRandomInt(500) },
+  { source: "Gas", target: "Industry", value: getRandomInt(500) },
+  { source: "Water", target: "Industry", value: getRandomInt(500) },
+  { source: "Refrigerant", target: "Industry", value: getRandomInt(500) }
+];

@@ -6,6 +6,7 @@ export {
   horizontalBarPlot,
   minMaxScaling,
   parallelCoordinates,
+  sankeyDiagram,
   scatterPlot,
   stackedBarPlot
 } from "./plots";

@@ -1,5 +1,15 @@
-import type { Data, Mark, Markish, PlotOptions } from "@observablehq/plot";
-import { extent, range, scaleLinear, scaleOrdinal, schemeTableau10, select } from "d3";
+import type { Data, Markish, PlotOptions } from "@observablehq/plot";
+import {
+  create,
+  extent,
+  format,
+  scaleLinear,
+  scaleOrdinal,
+  schemeCategory10,
+  schemeTableau10,
+  select
+} from "d3";
+import { sankey, sankeyJustify, sankeyLinkHorizontal } from "d3-sankey";
 import {
   areaY,
   axisFy,
@@ -488,6 +498,108 @@ export function parallelCoordinates<Type>(
   div.append(parallelCoordinates);
   div.append(highlightElements.label);
   div.append(highlightElements.select);
+}
+
+export function sankeyDiagram<Type>(
+  nodeId: string,
+  data: Type,
+  width: number,
+  height: number,
+  unit: string
+) {
+  const formatting = format(",.0f");
+  const style = "max-width: 100%, height: auto; font: 10px sans-serif;";
+  const source = `#${nodeId}`;
+
+  const svg = select(source)
+    .append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .attr("viewBox", [0, 0, width, height])
+    .attr("style", style);
+
+  const skey = sankey()
+    .nodeId((d) => d["name"])
+    .nodeAlign(sankeyJustify)
+    .nodeWidth(15)
+    .nodePadding(10)
+    .extent([
+      [1, 5],
+      [width - 1, height - 5]
+    ]);
+
+  // Assign new objects to avoid side effects on original state
+  const { nodes, links } = skey({
+    nodes: data["nodes"].map((d) => {
+      return { ...d };
+    }),
+    links: data["links"].map((d) => {
+      return { ...d };
+    })
+  });
+
+  const color = scaleOrdinal(schemeCategory10);
+  const rect = svg
+    .append("g")
+    .attr("stroke", "#000")
+    .selectAll()
+    .data(nodes)
+    .join("rect")
+    .attr("x", (d) => d.x0)
+    .attr("y", (d) => d.y0)
+    .attr("height", (d) => d.y1 - d.y0)
+    .attr("width", (d) => d.x1 - d.x0)
+    .attr("fill", (d) => color(d["category"]));
+
+  rect.append("title").text((d) => `${d["name"]}\n${formatting(d["value"])} ${unit}`);
+
+  const link = svg
+    .append("g")
+    .attr("fill", "none")
+    .attr("stroke-opacity", 0.5)
+    .selectAll()
+    .data(links)
+    .join("g")
+    .style("mix-blend-mode", "multiply");
+
+  links.forEach((l, index) => {
+    const linkId = `${index}`;
+    l["uid"] = index;
+    const gradient = link
+      .append("linearGradient")
+      .attr("id", linkId)
+      .attr("gradientUnits", "userSpaceOnUse")
+      .attr("x1", (d) => d.source["x1"])
+      .attr("x2", (d) => d.target["x0"]);
+    gradient
+      .append("stop")
+      .attr("offset", "0%")
+      .attr("stop-color", (d) => color(d.source["category"]));
+    gradient
+      .append("stop")
+      .attr("offset", "100%")
+      .attr("stop-color", (d) => color(d.target["category"]));
+    link
+      .append("path")
+      .attr("d", sankeyLinkHorizontal())
+      .attr("stroke", (d) => color(d["uid"]))
+      .attr("stroke-width", (d) => Math.max(1, d.width));
+
+    link
+      .append("title")
+      .text((d) => `${d.source["name"]} -> ${d.target["name"]}\n${formatting(d.value)}`);
+  });
+
+  svg
+    .append("g")
+    .selectAll()
+    .data(nodes)
+    .join("text")
+    .attr("x", (d) => (d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6))
+    .attr("y", (d) => (d.y1 + d.y0) / 2)
+    .attr("dy", "0.35em")
+    .attr("text-anchor", (d) => (d.x0 < width / 2 ? "start" : "end"))
+    .text((d) => d["name"]);
 }
 
 export function scatterPlot<Type>(
