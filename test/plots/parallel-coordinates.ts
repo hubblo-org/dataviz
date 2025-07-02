@@ -1,12 +1,12 @@
 import { minMaxScaling, parallelCoordinates } from "../../src";
 import { DC, dcData } from "../data/data";
+import { renderPlotDiv } from "./utils";
 
 export function renderParallelCoordinates() {
   const plotId = "parallel-coordinates-plot";
   const mainDiv = document.getElementById("render-plot");
-  const plotDiv = document.createElement("div");
-  plotDiv.setAttribute("id", plotId);
-  mainDiv?.appendChild(plotDiv);
+  renderPlotDiv(plotId);
+
   const scaleCheckbox = document.createElement("input");
   const scaleLabel = document.createElement("label");
   scaleCheckbox.setAttribute("type", "checkbox");

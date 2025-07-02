@@ -1,12 +1,10 @@
 import { sankeyDiagram } from "../../src";
 import { sourcesTargets } from "../data/data";
+import { renderPlotDiv } from "./utils";
 
 export function renderSankey() {
   const plotId = "sankey-plot";
-  const mainDiv = document.getElementById("render-plot");
-  const plotDiv = document.createElement("div");
-  plotDiv.setAttribute("id", plotId);
-  mainDiv?.appendChild(plotDiv);
+  renderPlotDiv(plotId);
 
   const links = sourcesTargets;
   const nodes = [
@@ -21,5 +19,5 @@ export function renderSankey() {
   ];
   const data = { nodes, links };
 
-  sankeyDiagram(plotId, data, 1200, 1000, "Twh");
+  sankeyDiagram(plotId, data, 800, 600, "Twh");
 }

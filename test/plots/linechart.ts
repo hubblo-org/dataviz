@@ -1,4 +1,5 @@
 import { areaChart, lineChart } from "../../src";
+import { renderPlotDiv } from "./utils";
 
 const oneLine = [
   { group: "colocation", date: "2013-01-01", number: 45 },
@@ -39,36 +40,27 @@ const multiLines = [
 
 export function renderLineChart() {
   const plotId = "line-chart-plot";
-  const mainDiv = document.getElementById("render-plot");
-  const plotDiv = document.createElement("div");
-  plotDiv.setAttribute("id", plotId);
-  mainDiv?.appendChild(plotDiv);
-
+  renderPlotDiv(plotId);
   lineChart(`#${plotId}`, oneLine, 800, 600, "date", "number");
 }
 
 export function renderMultiLinesChart() {
   const plotId = "line-chart-plot";
-  const mainDiv = document.getElementById("render-plot");
-  const plotDiv = document.createElement("div");
-  plotDiv.setAttribute("id", plotId);
-  mainDiv?.appendChild(plotDiv);
+  renderPlotDiv(plotId);
 
   lineChart(`#${plotId}`, multiLines, 800, 600, "date", "number", "group");
 }
 
 export function renderAreaChart() {
   const plotId = "area-chart-plot";
+  renderPlotDiv(plotId);
   const mainDiv = document.getElementById("render-plot");
-  const plotDiv = document.createElement("div");
   const checkbox = document.createElement("input");
   const label = document.createElement("label");
   checkbox.setAttribute("type", "checkbox");
   checkbox.setAttribute("id", "normalize");
   label.setAttribute("for", "normalize");
   label.textContent = "Normalize";
-  plotDiv.setAttribute("id", plotId);
-  mainDiv?.appendChild(plotDiv);
   mainDiv?.appendChild(checkbox);
   mainDiv?.appendChild(label);
 
