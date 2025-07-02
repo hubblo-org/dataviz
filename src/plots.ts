@@ -1,6 +1,6 @@
 import type { Data, Markish, PlotOptions } from "@observablehq/plot";
+import type { SankeyData, SNode, SLink } from "./types/dataviz";
 import {
-  create,
   extent,
   format,
   scaleLinear,
@@ -530,10 +530,10 @@ export function sankeyDiagram<Type>(
 
   // Assign new objects to avoid side effects on original state
   const { nodes, links } = skey({
-    nodes: data["nodes"].map((d) => {
+    nodes: data.nodes.map((d: SNode) => {
       return { ...d };
     }),
-    links: data["links"].map((d) => {
+    links: data.links.map((d: SLink) => {
       return { ...d };
     })
   });
@@ -555,39 +555,41 @@ export function sankeyDiagram<Type>(
 
   const link = svg
     .append("g")
+    .attr("class", "g-link")
     .attr("fill", "none")
     .attr("stroke-opacity", 0.5)
     .selectAll()
     .data(links)
     .join("g")
+    .attr("id", function (d) {
+      return `g-${d.index}`;
+    })
     .style("mix-blend-mode", "multiply");
 
-  links.forEach((l, index) => {
-    const linkId = `${index}`;
-    l["uid"] = index;
-    const gradient = link
+  link.each((l: SNode, index) => {
+    const linkId = `g-${index}`;
+    const gradientId = `gradient-${index}`;
+    const referenceForStrokeColor = `url(#${gradientId})`;
+
+    const selectedLink = select(`#${linkId}`);
+
+    const gradient = selectedLink
       .append("linearGradient")
-      .attr("id", linkId)
+      .attr("id", gradientId)
       .attr("gradientUnits", "userSpaceOnUse")
-      .attr("x1", (d) => d.source["x1"])
-      .attr("x2", (d) => d.target["x0"]);
-    gradient
-      .append("stop")
-      .attr("offset", "0%")
-      .attr("stop-color", (d) => color(d.source["category"]));
-    gradient
-      .append("stop")
-      .attr("offset", "100%")
-      .attr("stop-color", (d) => color(d.target["category"]));
-    link
+      .attr("x1", l.source.x1)
+      .attr("x2", l.target.x0);
+    gradient.append("stop").attr("offset", "0%").attr("stop-color", color(l.source.category));
+    gradient.append("stop").attr("offset", "100%").attr("stop-color", color(l.target.category));
+
+    selectedLink
       .append("path")
       .attr("d", sankeyLinkHorizontal())
-      .attr("stroke", (d) => color(d["uid"]))
-      .attr("stroke-width", (d) => Math.max(1, d.width));
-
-    link
+      .attr("stroke", referenceForStrokeColor)
+      .attr("stroke-width", Math.max(1, l.width));
+    selectedLink
       .append("title")
-      .text((d) => `${d.source["name"]} -> ${d.target["name"]}\n${formatting(d.value)}`);
+      .text(`${l.source.name} -> ${l.target.name}\n${formatting(l.value)} ${unit}`);
   });
 
   svg
