@@ -534,7 +534,7 @@ export function sankeyDiagram(
     .attr("style", style);
 
   const skey = sankey()
-    .nodeId((d) => d["name"])
+    .nodeId((d: SNode) => d.name)
     .nodeAlign(sankeyJustify)
     .nodeWidth(15)
     .nodePadding(10)
@@ -566,7 +566,7 @@ export function sankeyDiagram(
     .attr("width", (d) => d.x1 - d.x0)
     .attr("fill", (d) => color(d["category"]));
 
-  rect.append("title").text((d) => `${d["name"]}\n${formatting(d["value"])} ${unit}`);
+  rect.append("title").text((d: SNode) => `${d.name}\n${formatting(d.value)} ${unit}`);
 
   const link = svg
     .append("g")
@@ -576,9 +576,7 @@ export function sankeyDiagram(
     .selectAll()
     .data(links)
     .join("g")
-    .attr("id", function (d) {
-      return `g-${d.index}`;
-    })
+    .attr("id", (d) =>`g-${d.index}`)
     .style("mix-blend-mode", "multiply");
 
   link.each((l: SNode, index) => {
@@ -616,7 +614,7 @@ export function sankeyDiagram(
     .attr("y", (d) => (d.y1 + d.y0) / 2)
     .attr("dy", "0.35em")
     .attr("text-anchor", (d) => (d.x0 < width / 2 ? "start" : "end"))
-    .text((d) => d["name"]);
+    .text((d: SNode) => d.name);
 }
 
 /** Renders a scatterplot for the provided data.
