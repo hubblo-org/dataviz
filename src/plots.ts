@@ -500,12 +500,27 @@ export function parallelCoordinates<Type>(
   div.append(highlightElements.select);
 }
 
-export function sankeyDiagram<Type>(
+/** Renders a sankey diagram for the provided data.
+ *
+ * @remarks
+ *
+ * A sankey diagram is a useful representation for showing an evolution, or relationships
+ * between different elements and their proportions. The data to be rendered on such a
+ * diagram need to include `nodes` (the individual elements) and `links` (the relationship
+ * between two elements, and the numerical value associated with it).
+ *
+ * @param nodeId - The DOM element where the diagram will be rendered.
+ * @param data - The data structure to be rendered on the diagram.
+ * @param width - The diagram width, in pixels.
+ * @param height - The diagram height, in pixels
+ * @param unit - If provided, the unit used for each link value.
+ */
+export function sankeyDiagram(
   nodeId: string,
-  data: Type,
+  data: SankeyData,
   width: number,
   height: number,
-  unit: string
+  unit: string = ""
 ) {
   const formatting = format(",.0f");
   const style = "max-width: 100%, height: auto; font: 10px sans-serif;";
@@ -604,6 +619,27 @@ export function sankeyDiagram<Type>(
     .text((d) => d["name"]);
 }
 
+/** Renders a scatterplot for the provided data.
+ * 
+ * @remarks
+ *
+ * A scatterplot distribute each element in the provided data structure on a graph, 
+ * their position being determined by their value for the indicated properties. The
+ * correlation for both properties is not determined by this method ; one has to
+ * determinate if it makes sense to show the relationship between these two properties.
+ * For each element, its associated metadata and other values are available by hovering
+ * on its position on the graph.
+ *
+ * @param nodeId - The DOM element where the diagram will be rendered.
+ * @param data - The data structure to be rendered on the diagram.
+ * @param width - The diagram width, in pixels.
+ * @param height - The diagram height, in pixels
+ * @param xLabel - The data property to be rendered on the x axis.
+ * @param yLabel - The data property to be rendered on the y axis.
+ * @param domain - The property identifying the element's category.
+ * @param domains - The data properties meant to be visible when hovering on the element.
+ *
+ */
 export function scatterPlot<Type>(
   nodeId: string,
   data: Type[],
@@ -659,6 +695,7 @@ export function scatterPlot<Type>(
  * @param xLabel - The data property to be rendered on the x axis.
  * @param yLabel - The data property to be rendered on the y axis.
  * @param fillLabel - The third data property, representing part of a whole.
+ *
  */
 export function stackedBarPlot<Type>(
   nodeId: string,
