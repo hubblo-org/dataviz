@@ -3,6 +3,7 @@ import type { SankeyData, SNode, SLink } from "./types/dataviz";
 import {
   axisBottom,
   axisLeft,
+  BaseType,
   cross,
   extent,
   format,
@@ -41,6 +42,13 @@ export type ColorFunction = (color: string) => string;
 const selectStyle =
   "background: 0 0; position: relative; border: 1px solid hsla(240, 6%, 87%, 1); border-radius: 4px; padding: 0.425em 1em 0.45em; min-height: 1.5rem; font: inherit;";
 
+/** Renders a legend for the plot, with each domain associated to a color.
+ * 
+ * @param nodeId - The DOM element where the plot will be rendered.
+ * @param width - The plot width, in pixels.
+ * @param domains - The dataset categories identified on the legend.
+ * @param color - The function assocating a domain with a color.
+ */
 export function addLegend(nodeId: string, width: number, domains: string[], color: ColorFunction) {
   const swatchStyle =
     ".swatch::before {content: ''; width: 15px; height: 15px; margin-right: 5px; background: var(--color)}";
@@ -97,20 +105,20 @@ export function addLogo(nodeId: string, logo: string) {
  * where different properties are represented on the same graph. This method allows
  * to normalize all values of each element, after identifying the minimum and maximum values.
  *
- * @param dimensions - The different data properties to be normalized.
+ * @param domains - The different data properties to be normalized.
  * @param data - The source dataset.
  */
-export function minMaxScaling<Type>(dimensions: [keyof Type], data: Type[]): Type[] {
+export function minMaxScaling<Type>(domains: [keyof Type], data: Type[]): Type[] {
   const scaledData = data.map((element) => {
     let scaledDatum = { ...element };
-    dimensions.forEach((dimension) => {
-      if (typeof element[dimension] === "number") {
-        const values: number[] = data.map((element) => element[dimension] as number);
+    domains.forEach((domain) => {
+      if (typeof element[domain] === "number") {
+        const values: number[] = data.map((element) => element[domain] as number);
         const min = Math.min(...values);
         const max = Math.max(...values);
-        const result = (element[dimension] - min) / (max - min);
+        const result = (element[domain] - min) / (max - min);
         const rounded = parseFloat((Math.round(result * 100) / 100).toFixed(2));
-        (scaledDatum[dimension] as number) = rounded;
+        (scaledDatum[domain] as number) = rounded;
       }
     });
     return scaledDatum;
@@ -251,6 +259,23 @@ function center(nodeId: string, width: number) {
   select(`#${nodeId}`).attr("style", `margin:auto; width: ${width}px`);
 }
 
+/** Renders a correlogram for the provided data.
+ *
+ * @remarks
+ *
+ * A correlogram can also be called a scatterplot matrix. For all provided numerical properties
+ * for the data structure, a scatterplot is produced allowing to explore possible correlations
+ * between two properties. All the scatterplots are then distributed on the final plot
+ * This is mostly useful as a tool to explore data than for data visualization
+ * in the proper sense of the word ; correlations have to be identified by external methods.
+ *
+ * @param nodeId - The DOM element where the plot will be rendered.
+ * @param data - The data structure to be rendered as a plot.
+ * @param width - The plot width, in pixels.
+ * @param height - The plot height, in pixels.
+ * @param domain - The property identifying the categories of the dataset.
+ * @param domains - The properties of the dataset.
+ */
 export function correlogram<Type>(
   nodeId: string,
   data: Type[],
@@ -287,7 +312,7 @@ export function correlogram<Type>(
     .ticks(6)
     .tickSize(size * domains.length);
 
-  const xAxis = (g: Selection<SVGGElement, any, any, any>) =>
+  const xAxis = (g: Selection<SVGGElement, BaseType, any, any>) =>
     g
       .selectAll("g")
       .data(xScales)
@@ -304,7 +329,7 @@ export function correlogram<Type>(
     .ticks(6)
     .tickSize(-size * domains.length);
 
-  const yAxis = (g: Selection<SVGGElement, any, any, any>) =>
+  const yAxis = (g: Selection<SVGGElement, BaseType, any, any>) =>
     g
       .selectAll("g")
       .data(yScales)
