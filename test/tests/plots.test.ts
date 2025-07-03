@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { screen, within } from "@testing-library/dom";
 import userEvent from "@testing-library/user-event";
-import { addSelect, ColorFunction, highlight, minMaxScaling } from "../../src/plots";
+import { addLegend, addSelect, ColorFunction, highlight, minMaxScaling } from "../../src/plots";
 import { scaleOrdinal, schemeTableau10 } from "d3";
 
 const initialInnerHtml = `
@@ -111,5 +111,15 @@ describe("minMaxScaling test suite", () => {
     const result = minMaxScaling(["value"], values);
     expect(result[1].value).toEqual(0.08);
     expect(result[1].type).toEqual("private");
+  });
+});
+
+describe("addLegend test suite", () => {
+  const testDomains = ["private", "hyperscaler", "colocation"];
+  const color = scaleOrdinal().domain(testDomains).range(schemeTableau10);
+  it("adds a legend with all domains as an element represented in the legend", () => {
+    document.body.innerHTML = initialInnerHtml;
+    addLegend("plot-container", 800, testDomains, color as ColorFunction);
+    testDomains.forEach((domain) => expect(screen.getByText(domain)).toBeVisible());
   });
 });

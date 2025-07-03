@@ -1,13 +1,18 @@
 import type { Data, Markish, PlotOptions } from "@observablehq/plot";
 import type { SankeyData, SNode, SLink } from "./types/dataviz";
 import {
+  axisBottom,
+  axisLeft,
+  cross,
   extent,
   format,
+  range,
   scaleLinear,
   scaleOrdinal,
   schemeCategory10,
   schemeTableau10,
-  select
+  select,
+  Selection
 } from "d3";
 import { sankey, sankeyJustify, sankeyLinkHorizontal } from "d3-sankey";
 import {
@@ -35,6 +40,47 @@ export type ColorFunction = (color: string) => string;
 
 const selectStyle =
   "background: 0 0; position: relative; border: 1px solid hsla(240, 6%, 87%, 1); border-radius: 4px; padding: 0.425em 1em 0.45em; min-height: 1.5rem; font: inherit;";
+
+export function addLegend(nodeId: string, width: number, domains: string[], color: ColorFunction) {
+  const swatchStyle =
+    ".swatch::before {content: ''; width: 15px; height: 15px; margin-right: 5px; background: var(--color)}";
+  const style = document.getElementsByTagName("style")[0];
+  if (style && !style.innerHTML.includes(swatchStyle)) {
+    const updatedStyle = "".concat(style.innerHTML, swatchStyle);
+    style.innerHTML = updatedStyle;
+  }
+  if (!style) {
+    const body = document.getElementsByTagName("body")[0];
+    const s = document.createElement("style");
+    s.innerHTML = swatchStyle;
+    body.appendChild(s);
+  }
+  const legendId = `${nodeId}-correlogram-legend`;
+  const legendWrapperId = `${legendId}-wrapper`;
+  const correlogramLegend = select(`#${nodeId}`)
+    .append("div")
+    .attr("id", legendId)
+    .attr(
+      "style",
+      "display: flex; align-items: center; margin-bottom: 12px; margin-left: 15px;  font-size: 1.10 rem;"
+    );
+
+  if (!correlogramLegend.empty()) {
+    correlogramLegend.selectChildren("span").remove();
+    domains.forEach((domain) => {
+      correlogramLegend
+        .append("span")
+        .attr("class", "swatch")
+        .attr(
+          "style",
+          `display: inline-flex; align-items: center; margin-right: 5px; height: 15px; --color: ${color(domain)};`
+        )
+        .text(domain.toLowerCase());
+    });
+  }
+
+  select(legendWrapperId).attr("style", `width: ${width}px; display: flex; margin-bottom: 12px;`);
+}
 
 export function addLogo(nodeId: string, logo: string) {
   // When a legend is created with the generated plot, a figure element is added to the selected div.
@@ -203,6 +249,119 @@ export function areaChart<Type>(
 
 function center(nodeId: string, width: number) {
   select(`#${nodeId}`).attr("style", `margin:auto; width: ${width}px`);
+}
+
+export function correlogram<Type>(
+  nodeId: string,
+  data: Type[],
+  width: number,
+  height: number,
+  domain: string,
+  domains: string[]
+) {
+  const padding = 28;
+  const size = (width - (domains.length + 1) * padding) / domains.length + padding;
+  const svgStyle = "circle.hidden {fill: #000; fill-opacity: 1; r: 1px; } ";
+
+  const xScales = domains.map((domain) =>
+    scaleLinear()
+      .domain(extent(data, (d) => d[domain]))
+      .rangeRound([padding / 2, size - padding / 2])
+  );
+
+  const yScales = xScales.map((xScales) => xScales.copy().range([size - padding / 2, padding / 2]));
+
+  const color = scaleOrdinal()
+    .domain(data.map((d) => d[domain]))
+    .range(schemeCategory10);
+
+  addLegend(nodeId, width, color.domain(), color as ColorFunction);
+
+  const svg = select(`#${nodeId}`)
+    .append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .attr("viewBox", [-padding, 0, width, height]);
+
+  const bottomAxis = axisBottom()
+    .ticks(6)
+    .tickSize(size * domains.length);
+
+  const xAxis = (g: Selection<SVGGElement, any, any, any>) =>
+    g
+      .selectAll("g")
+      .data(xScales)
+      .join("g")
+      .attr("transform", (d, index) => `translate(${index * size}, 0)`)
+      .each(function (d) {
+        const scale = select(this).call(bottomAxis.scale(d));
+        return scale;
+      })
+      .call((g) => g.select(".domain").remove())
+      .call((g) => g.selectAll(".tick line").attr("stroke", "#ddd"));
+
+  const leftAxis = axisLeft()
+    .ticks(6)
+    .tickSize(-size * domains.length);
+
+  const yAxis = (g: Selection<SVGGElement, any, any, any>) =>
+    g
+      .selectAll("g")
+      .data(yScales)
+      .join("g")
+      .attr("transform", (d, index) => `translate(0, ${index * size})`)
+      .each(function (d) {
+        return select(this).call(leftAxis.scale(d));
+      })
+      .call((g) => g.select(".domain").remove())
+      .call((g) => g.selectAll(".tick line").attr("stroke", "#ddd"));
+  svg.append("style").text(svgStyle);
+  svg.append("g").call(xAxis);
+  svg.append("g").call(yAxis);
+
+  const cell = svg
+    .append("g")
+    .selectAll("g")
+    .data(cross(range(domains.length), range(domains.length)))
+    .join("g")
+    .attr("transform", ([i, j]) => `translate(${i * size}, ${j * size})`);
+
+  cell
+    .append("rect")
+    .attr("fill", "none")
+    .attr("stroke", "#aaa")
+    .attr("x", padding / 2 + 0.5)
+    .attr("y", padding / 2 + 0.5)
+    .attr("width", size - padding)
+    .attr("height", size - padding);
+
+  cell.each(function ([i, j]) {
+    select(this)
+      .selectAll("circle")
+      .data(data.filter((d) => !isNaN(d[domains[i]]) && !isNaN(d[domains[j]])))
+      .join("circle")
+      .attr("cx", (d) => xScales[i](d[domains[i]]))
+      .attr("cy", (d) => yScales[j](d[domains[j]]));
+  });
+
+  cell
+    .selectAll("circle")
+    .attr("r", 3.5)
+    .attr("fill-opacity", 0.7)
+    .attr("fill", (d) => color(d[domain]) as string);
+
+  svg
+    .append("g")
+    .style("font", "bold 10px sans-serif")
+    .style("pointer-events", "none")
+    .selectAll("text")
+    .data(domains)
+    .join("text")
+    .attr("transform", (d, index) => `translate(${index * size}, ${index * size})`)
+    .attr("x", padding)
+    .attr("y", padding)
+    .attr("dy", ".71em")
+    .text((d) => d);
 }
 
 /** Renders a select element allowing to hightlight the selected data group.
@@ -576,7 +735,7 @@ export function sankeyDiagram(
     .selectAll()
     .data(links)
     .join("g")
-    .attr("id", (d) =>`g-${d.index}`)
+    .attr("id", (d) => `g-${d.index}`)
     .style("mix-blend-mode", "multiply");
 
   link.each((l: SNode, index) => {
@@ -618,10 +777,10 @@ export function sankeyDiagram(
 }
 
 /** Renders a scatterplot for the provided data.
- * 
+ *
  * @remarks
  *
- * A scatterplot distribute each element in the provided data structure on a graph, 
+ * A scatterplot distribute each element in the provided data structure on a graph,
  * their position being determined by their value for the indicated properties. The
  * correlation for both properties is not determined by this method ; one has to
  * determinate if it makes sense to show the relationship between these two properties.

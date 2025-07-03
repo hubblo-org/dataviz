@@ -1,7 +1,9 @@
 export {
+  addLegend,
   addLogo,
   addSelect,
   areaChart,
+  correlogram,
   lineChart,
   horizontalBarPlot,
   minMaxScaling,
