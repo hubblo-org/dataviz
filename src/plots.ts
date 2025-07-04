@@ -13,7 +13,9 @@ import {
   schemeCategory10,
   schemeTableau10,
   select,
-  Selection
+  Selection,
+  symbol,
+  symbolsFill
 } from "d3";
 import { sankey, sankeyJustify, sankeyLinkHorizontal } from "d3-sankey";
 import {
@@ -38,52 +40,56 @@ import {
 } from "@observablehq/plot";
 
 export type ColorFunction = (color: string) => string;
+export type SymbolFunction = (symbol: string) => string;
 
 const selectStyle =
   "background: 0 0; position: relative; border: 1px solid hsla(240, 6%, 87%, 1); border-radius: 4px; padding: 0.425em 1em 0.45em; min-height: 1.5rem; font: inherit;";
 
 /** Renders a legend for the plot, with each domain associated to a color.
- * 
+ *
  * @param nodeId - The DOM element where the plot will be rendered.
  * @param width - The plot width, in pixels.
  * @param domains - The dataset categories identified on the legend.
  * @param color - The function assocating a domain with a color.
  */
-export function addLegend(nodeId: string, width: number, domains: string[], color: ColorFunction) {
-  const swatchStyle =
-    ".swatch::before {content: ''; width: 15px; height: 15px; margin-right: 5px; background: var(--color)}";
-  const style = document.getElementsByTagName("style")[0];
-  if (style && !style.innerHTML.includes(swatchStyle)) {
-    const updatedStyle = "".concat(style.innerHTML, swatchStyle);
-    style.innerHTML = updatedStyle;
-  }
-  if (!style) {
-    const body = document.getElementsByTagName("body")[0];
-    const s = document.createElement("style");
-    s.innerHTML = swatchStyle;
-    body.appendChild(s);
-  }
-  const legendId = `${nodeId}-correlogram-legend`;
+export function addLegend(
+  nodeId: string,
+  width: number,
+  domains: string[],
+  color: ColorFunction,
+  symbol: SymbolFunction
+) {
+  const legendId = `${nodeId}-legend`;
   const legendWrapperId = `${legendId}-wrapper`;
-  const correlogramLegend = select(`#${nodeId}`)
+  const legend = select(`#${nodeId}`)
     .append("div")
     .attr("id", legendId)
     .attr(
       "style",
-      "display: flex; align-items: center; margin-bottom: 12px; margin-left: 15px;  font-size: 1.10 rem;"
+      "display: flex; align-items: center; margin: 12px; font-size: 1.10 rem;"
     );
 
-  if (!correlogramLegend.empty()) {
-    correlogramLegend.selectChildren("span").remove();
+  if (!legend.empty()) {
+    legend.selectChildren("span").remove();
     domains.forEach((domain) => {
-      correlogramLegend
+      const symbolContainerSize = 20;
+      const symbolViewBox = [-10, -10, 20, 20];
+      legend
         .append("span")
         .attr("class", "swatch")
         .attr(
           "style",
-          `display: inline-flex; align-items: center; margin-right: 5px; height: 15px; --color: ${color(domain)};`
+          `display: inline-flex; align-items: center; margin-right: 5px; height: 15px;};`
         )
-        .text(domain.toLowerCase());
+        .text(domain.toLowerCase())
+        .append("svg")
+        .attr("width", symbolContainerSize)
+        .attr("height", symbolContainerSize)
+        .attr("viewBox", symbolViewBox)
+        .attr("style", "margin-right: 3px")
+        .append("path")
+        .attr("d", symbol(domain))
+        .attr("fill", color(domain));
     });
   }
 
@@ -300,7 +306,12 @@ export function correlogram<Type>(
     .domain(data.map((d) => d[domain]))
     .range(schemeCategory10);
 
-  addLegend(nodeId, width, color.domain(), color as ColorFunction);
+  const symbolize = scaleOrdinal(
+    data.map((d) => d[domain]),
+    symbolsFill.map((s) => symbol().type(s)())
+  );
+
+  addLegend(nodeId, width, color.domain(), color as ColorFunction, symbolize as SymbolFunction);
 
   const svg = select(`#${nodeId}`)
     .append("svg")
@@ -362,18 +373,18 @@ export function correlogram<Type>(
 
   cell.each(function ([i, j]) {
     select(this)
-      .selectAll("circle")
+      .selectAll("path")
       .data(data.filter((d) => !isNaN(d[domains[i]]) && !isNaN(d[domains[j]])))
-      .join("circle")
-      .attr("cx", (d) => xScales[i](d[domains[i]]))
-      .attr("cy", (d) => yScales[j](d[domains[j]]));
+      .join("path")
+      .attr("r", 3.5)
+      .attr("fill-opacity", 0.7)
+      .attr("fill", (d) => color(d[domain]) as string)
+      .attr("d", (d) => symbolize(d[domain] as string))
+      .attr(
+        "transform",
+        (d) => `translate(${xScales[i](d[domains[i]])}, ${yScales[j](d[domains[j]])})`
+      );
   });
-
-  cell
-    .selectAll("circle")
-    .attr("r", 3.5)
-    .attr("fill-opacity", 0.7)
-    .attr("fill", (d) => color(d[domain]) as string);
 
   svg
     .append("g")
