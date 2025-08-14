@@ -7,7 +7,7 @@ import {
   ColorFunction,
   highlight,
   minMaxScaling,
-  ShapeFunction
+  SymbolFunction
 } from "../../src/plots";
 import { scaleOrdinal, schemeTableau10, symbol, symbolsFill } from "d3";
 
@@ -124,12 +124,12 @@ describe("minMaxScaling test suite", () => {
 describe("addLegend test suite", () => {
   const testDomains = ["private", "hyperscaler", "colocation"];
   const color = scaleOrdinal().domain(testDomains).range(schemeTableau10);
-  const shape = scaleOrdinal()
+  const sym = scaleOrdinal()
     .domain(testDomains)
     .range(symbolsFill.map((s) => symbol().type(s)()));
   it("adds a legend with all domains as an element represented in the legend", () => {
     document.body.innerHTML = initialInnerHtml;
-    addLegend("plot-container", 800, testDomains, color as ColorFunction, shape as ShapeFunction);
+    addLegend("plot-container", 800, testDomains, color as ColorFunction, sym as SymbolFunction);
     testDomains.forEach((domain) => expect(screen.getByText(domain)).toBeVisible());
   });
 });
