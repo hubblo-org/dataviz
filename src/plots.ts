@@ -64,10 +64,7 @@ export function addLegend(
   const legend = select(`#${nodeId}`)
     .append("div")
     .attr("id", legendId)
-    .attr(
-      "style",
-      "display: flex; align-items: center; margin: 12px; font-size: 1.10 rem;"
-    );
+    .attr("style", "display: flex; align-items: center; margin: 12px; font-size: 1.10 rem;");
 
   if (!legend.empty()) {
     legend.selectChildren("span").remove();
@@ -149,6 +146,7 @@ export function addSelect<Type>(
   width: number,
   initialOption: string
 ): string {
+  const initialOptionId = `${nodeId}-${initialOption}`;
   const selectContainerId = `${nodeId}-select-container`;
   const selectId = `${nodeId}-select`;
   const divForSelect = document.querySelector(`#${selectContainerId}`);
@@ -174,10 +172,14 @@ export function addSelect<Type>(
 
     const options = Object.keys(data[0]).filter(isNotAnAxis);
     options.forEach((option) =>
-      select(`#${selectId}`).append("option").attr("value", option).attr("id", option).text(option)
+      select(`#${selectId}`)
+        .append("option")
+        .attr("value", option)
+        .attr("id", `${nodeId}-${option}`)
+        .text(option)
     );
 
-    const selection = document.getElementById(`${initialOption}`);
+    const selection = document.getElementById(`${initialOptionId}`);
     (selection as HTMLOptionElement).selected = true;
   }
   return selectId;
@@ -957,8 +959,9 @@ export function stackedBarPlot<Type>(
     const selectElement: HTMLSelectElement = document.querySelector(`#${selectId}`);
     selectElement.addEventListener("change", function () {
       const selectedProperty = this.value;
+      const propertyId = `${nodeId}-${selectedProperty}`;
       selectElement.value = selectedProperty;
-      const option = document.getElementById(selectedProperty);
+      const option = document.getElementById(propertyId);
       (option as HTMLOptionElement).selected = true;
 
       const fieldDomains = [...new Set(data.map((element: Type) => element[selectedProperty]))];
