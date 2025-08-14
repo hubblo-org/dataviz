@@ -20,3 +20,4 @@ export {
   hexagonCoordinates,
   rewind
 } from "./carto";
+export { normalizeValues } from "./utils";
