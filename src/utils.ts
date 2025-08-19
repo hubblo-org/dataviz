@@ -1,9 +1,16 @@
-/** Normalizes all numeric values for a given array of elements. 
+export function sanitizeNumber(x: string) {
+  const maybeNumber = parseInt(x);
+  if (isNaN(maybeNumber)) {
+    throw new Error("Provided string cannot be cast as number!");
+  }
+  return maybeNumber;
+}
+/** Normalizes all numeric values for a given array of elements.
  *
  * The normalization is relative to identified values inside the array for each property.
  * Each numeric value is associated either to `high`, `average` or `low`.
- * This allows for a quicker data preparation, but will not be accurate in its present state:  allowing 
- * for an absolute normalization (for example, identifying that a given value is indeed high for a given unit and 
+ * This allows for a quicker data preparation, but will not be accurate in its present state:  allowing
+ * for an absolute normalization (for example, identifying that a given value is indeed high for a given unit and
  * not just relative to other values in the array) will require more mork.
  *
  *

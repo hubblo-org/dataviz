@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { dcData } from "../data/data";
-import { normalizeValues } from "../../src";
+import { normalizeValues, sanitizeNumber } from "../../src";
 
 describe("normalizeValues test suite", () => {
   it("normalizes numeric values for each property of an element to a quality", () => {
@@ -17,7 +17,7 @@ describe("normalizeValues test suite", () => {
         status: "open",
         power: 5,
         waterUsage: 5,
-        surface: 5000 
+        surface: 5000
       },
       {
         type: "hyperscaler",
@@ -36,5 +36,19 @@ describe("normalizeValues test suite", () => {
       expect(normalizedData[1][property]).toStrictEqual("average");
       expect(normalizedData[2][property]).toStrictEqual("high");
     });
+  });
+});
+
+describe("sanitizeNumber test suite", () => {
+  it("returns a number if the parsed string can be cast as number", () => {
+    const string = "456";
+    const result = sanitizeNumber(string);
+    expect(result).toStrictEqual(456);
+  });
+  it("returns an error if the parsed string cannot be cast as number", () => {
+    const string = "xyz";
+    expect(() => sanitizeNumber(string)).toThrowError(
+      /^Provided string cannot be cast as number!$/
+    );
   });
 });
