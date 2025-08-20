@@ -28,7 +28,7 @@
 		"vitest": "^3.1.4"
 	},
 	"scripts": {
-		"testServer": "vite serve test/",
+		"testServer": "vite serve",
 		"test": "vitest"
 	}
 }
