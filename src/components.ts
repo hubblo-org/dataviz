@@ -1,7 +1,6 @@
 import { stackedBarPlot } from "./plots";
 import { sanitizeNumber } from "./utils";
 
-
 export class StackedBarPlot extends HTMLElement {
   content: string;
   domains: string;
@@ -12,7 +11,7 @@ export class StackedBarPlot extends HTMLElement {
   fill?: string;
 
   static get observedAttributes() {
-    return ["number", "data", "domains", "width", "height", "x", "y", "fill"];
+    return ["content", "domains", "width", "height", "x", "y", "fill"];
   }
   constructor() {
     super();
@@ -40,7 +39,7 @@ export class StackedBarPlot extends HTMLElement {
     if (this.fill) {
       stackedBarPlot(this.id, dataToRender, width, height, domains, this.x, this.y, this.fill);
     } else {
-      stackedBarPlot(this.id, dataToRender, width, height, domains, this.x, this.y);
+    stackedBarPlot(this.id, dataToRender, width, height, domains, this.x, this.y);
     }
   }
 }
