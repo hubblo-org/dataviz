@@ -5,6 +5,17 @@ export function sanitizeNumber(x: string) {
   }
   return maybeNumber;
 }
+
+export function parseToBoolean(s: string) {
+  switch (s.toLowerCase()) {
+    case "true":
+      return true;
+    case "false":
+      return false;
+    default:
+      throw new Error("Provided string cannot be parsed as a boolean");
+  }
+}
 /** Normalizes all numeric values for a given array of elements.
  *
  * The normalization is relative to identified values inside the array for each property.
@@ -39,9 +50,9 @@ export function normalizeValues(data: object[]) {
   });
 
   const normalizedData = data.map((element) => {
-    let normalizedElement: Record<string, any> = {};
+    let normalizedElement = { ...element };
     keys.forEach((k) => {
-      const valueToNormalize = element[k];
+      const valueToNormalize = normalizedElement[k];
       if (typeof valueToNormalize != "number") {
         return;
       }

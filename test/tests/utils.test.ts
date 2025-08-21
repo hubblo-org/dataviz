@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { dcData } from "../data/data";
 import { normalizeValues, sanitizeNumber } from "../../src";
+import { parseToBoolean } from "../../src/utils";
 
 describe("normalizeValues test suite", () => {
   it("normalizes numeric values for each property of an element to a quality", () => {
@@ -45,10 +46,30 @@ describe("sanitizeNumber test suite", () => {
     const result = sanitizeNumber(string);
     expect(result).toStrictEqual(456);
   });
-  it("returns an error if the parsed string cannot be cast as number", () => {
+  it("throws an error if the parsed string cannot be cast as number", () => {
     const string = "xyz";
     expect(() => sanitizeNumber(string)).toThrowError(
       /^Provided string cannot be cast as number!$/
+    );
+  });
+});
+
+describe("parseToBoolean test suite", () => {
+  it("parses a string to return the wanted boolean", () => {
+    const trueString = "true";
+    const falseString = "false";
+
+    const expectedTrue = parseToBoolean(trueString);
+    expect(expectedTrue).toStrictEqual(true);
+
+    const expectedFalse = parseToBoolean(falseString);
+    expect(expectedFalse).toStrictEqual(false);
+  });
+
+  it("throws an error if the string cannot be parsed as boolean", () => {
+    const string = "not a boolean";
+    expect(() => parseToBoolean(string)).toThrowError(
+      /Provided string cannot be parsed as a boolean$/
     );
   });
 });
