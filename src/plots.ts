@@ -256,10 +256,11 @@ export function areaChart<Type>(
     ];
   }
   const div = document.querySelector(`#${nodeId}`);
-  div.innerHTML = "";
   if (div) {
+    div.innerHTML = "";
     const areaChart = plot(plotOptions);
     div.append(areaChart);
+    return areaChart;
   }
 }
 
@@ -968,4 +969,5 @@ export function stackedBarPlot<Type>(
       stackedBarPlot(nodeId, data, width, height, fieldDomains, xLabel, yLabel, selectedProperty);
     });
   }
+  return barPlot;
 }
