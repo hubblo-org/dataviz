@@ -1,4 +1,4 @@
-import { areaChart, correlogram, lineChart, stackedBarPlot } from "./plots";
+import { areaChart, correlogram, lineChart, sankeyDiagram, stackedBarPlot } from "./plots";
 import { parseToBoolean, sanitizeNumber } from "./utils";
 
 const defaultWidth = "800";
@@ -7,6 +7,7 @@ const stackedBarPlotName = "stacked-bar-plot";
 const areaChartName = "area-chart";
 const correlogramName = "correlogram-plot";
 const lineChartName = "line-chart";
+const sankeyName = "sankey-diagram";
 
 function setupComponent(component: HTMLElement, componentName: string, width: number) {
   const shadow = component.attachShadow({ mode: "closed" });
@@ -36,45 +37,6 @@ function addNormalize() {
   return div;
 }
 
-export class LineChart extends HTMLElement {
-  content: string;
-  width: string = defaultWidth;
-  height: string = defaultHeight;
-  x: string;
-  y: string;
-  z?: string;
-
-  static get observedAttributes() {
-    return ["content", "width", "height", "x", "y", "z"];
-  }
-  attributeChangedCallback(property: string, oldValue: string, newValue: string) {
-    if (oldValue === newValue) return;
-    this[property] = newValue;
-  }
-  constructor() {
-    super();
-    this.content;
-    this.width;
-    this.height;
-    this.x;
-    this.y;
-    this.z;
-  }
-  connectedCallback() {
-    const width = sanitizeNumber(this.width);
-    const height = sanitizeNumber(this.height);
-    const dataToRender = JSON.parse(this.content);
-    const setup = setupComponent(this, correlogramName, width);
-    const container = setup.shadow.getElementById(setup.containerId);
-    if (this.z) {
-      const lc = lineChart(this.id, dataToRender, width, height, this.x, this.y, this.z);
-      container.append(lc);
-    } else {
-      const lc = lineChart(this.id, dataToRender, width, height, this.x, this.y);
-      container.append(lc);
-    }
-  }
-}
 
 export class AreaChart extends HTMLElement {
   content: string;
@@ -168,6 +130,79 @@ export class Correlogram extends HTMLElement {
   }
 }
 
+export class LineChart extends HTMLElement {
+  content: string;
+  width: string = defaultWidth;
+  height: string = defaultHeight;
+  x: string;
+  y: string;
+  z?: string;
+
+  static get observedAttributes() {
+    return ["content", "width", "height", "x", "y", "z"];
+  }
+  attributeChangedCallback(property: string, oldValue: string, newValue: string) {
+    if (oldValue === newValue) return;
+    this[property] = newValue;
+  }
+  constructor() {
+    super();
+    this.content;
+    this.width;
+    this.height;
+    this.x;
+    this.y;
+    this.z;
+  }
+  connectedCallback() {
+    const width = sanitizeNumber(this.width);
+    const height = sanitizeNumber(this.height);
+    const dataToRender = JSON.parse(this.content);
+    const setup = setupComponent(this, correlogramName, width);
+    const container = setup.shadow.getElementById(setup.containerId);
+    if (this.z) {
+      const lc = lineChart(this.id, dataToRender, width, height, this.x, this.y, this.z);
+      container.append(lc);
+    } else {
+      const lc = lineChart(this.id, dataToRender, width, height, this.x, this.y);
+      container.append(lc);
+    }
+  }
+}
+
+export class Sankey extends HTMLElement {
+  content: string;
+  width: string = defaultWidth;
+  height: string = defaultHeight;
+  unit: string;
+
+  static get observedAttributes() {
+    return ["content", "width", "height", "unit"];
+  }
+  attributeChangedCallback(property: string, oldValue: string, newValue: string) {
+    if (oldValue === newValue) return;
+    this[property] = newValue;
+  }
+  constructor() {
+    super();
+    this.content;
+    this.width;
+    this.height;
+    this.unit;
+  }
+  connectedCallback() {
+    const width = sanitizeNumber(this.width);
+    const height = sanitizeNumber(this.height);
+
+    const setup = setupComponent(this, sankeyName, width);
+    const container = setup.shadow.getElementById(setup.containerId);
+
+    const dataToRender = JSON.parse(this.content);
+    const skd = sankeyDiagram(this.id, dataToRender, width, height, this.unit);
+    container.append(skd);
+  }
+}
+
 export class StackedBarPlot extends HTMLElement {
   content: string;
   domains: string;
@@ -209,4 +244,5 @@ export class StackedBarPlot extends HTMLElement {
 customElements.define(areaChartName, AreaChart);
 customElements.define(correlogramName, Correlogram);
 customElements.define(lineChartName, LineChart);
+customElements.define(sankeyName, Sankey);
 customElements.define(stackedBarPlotName, StackedBarPlot);

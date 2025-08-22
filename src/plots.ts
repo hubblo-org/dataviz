@@ -816,6 +816,8 @@ export function sankeyDiagram(
     .attr("dy", "0.35em")
     .attr("text-anchor", (d) => (d.x0 < width / 2 ? "start" : "end"))
     .text((d: SNode) => d.name);
+
+  return svg.node();
 }
 
 /** Renders a scatterplot for the provided data.
