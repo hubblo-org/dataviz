@@ -113,3 +113,14 @@ const skd = document.createElement("sankey-diagram");
 skd.setAttribute("content", contentForSankey);
 skd.setAttribute("unit", "Twh");
 div6.append(skd);
+
+const div7 = document.createElement("div");
+div7.textContent = "Scatterplot";
+body.append(div7);
+const sp = document.createElement("scatter-plot");
+sp.setAttribute("content", content);
+sp.setAttribute("x", "power");
+sp.setAttribute("y", "waterUsage");
+sp.setAttribute("domain", "type");
+sp.setAttribute("domains", domains.toString());
+div7.append(sp);

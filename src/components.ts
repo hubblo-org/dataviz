@@ -1,13 +1,21 @@
-import { areaChart, correlogram, lineChart, sankeyDiagram, stackedBarPlot } from "./plots";
+import {
+  areaChart,
+  correlogram,
+  lineChart,
+  sankeyDiagram,
+  scatterPlot,
+  stackedBarPlot
+} from "./plots";
 import { parseToBoolean, sanitizeNumber } from "./utils";
 
 const defaultWidth = "800";
 const defaultHeight = "600";
-const stackedBarPlotName = "stacked-bar-plot";
 const areaChartName = "area-chart";
 const correlogramName = "correlogram-plot";
 const lineChartName = "line-chart";
 const sankeyName = "sankey-diagram";
+const scatterplotName = "scatter-plot";
+const stackedBarPlotName = "stacked-bar-plot";
 
 function setupComponent(component: HTMLElement, componentName: string, width: number) {
   const shadow = component.attachShadow({ mode: "closed" });
@@ -36,7 +44,6 @@ function addNormalize() {
 
   return div;
 }
-
 
 export class AreaChart extends HTMLElement {
   content: string;
@@ -203,6 +210,53 @@ export class Sankey extends HTMLElement {
   }
 }
 
+export class Scatterplot extends HTMLElement {
+  content: string;
+  width: string = defaultWidth;
+  height: string = defaultHeight;
+  x: string;
+  y: string;
+  domain: string;
+  domains: string;
+
+  static get observedAttributes() {
+    return ["content", "width", "height", "x", "y", "domain", "domains"];
+  }
+  constructor() {
+    super();
+    this.content;
+    this.width;
+    this.height;
+    this.x;
+    this.y;
+    this.domain;
+    this.domains;
+  }
+  attributeChangedCallback(property: string, oldValue: string, newValue: string) {
+    if (oldValue === newValue) return;
+    this[property] = newValue;
+  }
+  connectedCallback() {
+    const width = sanitizeNumber(this.width);
+    const height = sanitizeNumber(this.height);
+    const dataToRender = JSON.parse(this.content);
+    const domains = this.domains.split(",");
+    const setup = setupComponent(this, scatterplotName, width);
+    const container = setup.shadow.getElementById(setup.containerId);
+    const sp = scatterPlot(
+      this.id,
+      dataToRender,
+      width,
+      height,
+      this.x,
+      this.y,
+      this.domain,
+      domains
+    );
+    container.append(sp);
+  }
+}
+
 export class StackedBarPlot extends HTMLElement {
   content: string;
   domains: string;
@@ -245,4 +299,5 @@ customElements.define(areaChartName, AreaChart);
 customElements.define(correlogramName, Correlogram);
 customElements.define(lineChartName, LineChart);
 customElements.define(sankeyName, Sankey);
+customElements.define(scatterplotName, Scatterplot);
 customElements.define(stackedBarPlotName, StackedBarPlot);

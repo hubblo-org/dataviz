@@ -876,6 +876,7 @@ export function scatterPlot<Type>(
   });
 
   div.append(scatterplot);
+  return scatterplot;
 }
 /** Renders a bar plot, with each bar with stacked values.
  *
