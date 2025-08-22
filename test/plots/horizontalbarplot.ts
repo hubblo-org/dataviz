@@ -60,7 +60,12 @@ export function renderStackedBarPlotWithFillLabel() {
       normalizedSurface = "high";
     }
 
-    return { ...dc, power: normalizedPower, waterUsage: normalizedWaterUsage, surface: normalizedSurface };
+    return {
+      ...dc,
+      power: normalizedPower,
+      waterUsage: normalizedWaterUsage,
+      surface: normalizedSurface
+    };
   });
   const domains = [...new Set(groupedData.map((dc) => dc.power))];
   stackedBarPlot(plotId, groupedData, 800, 600, domains, "status", "type", "power");

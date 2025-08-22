@@ -41,14 +41,14 @@ const multiLines = [
 export function renderLineChart() {
   const plotId = "line-chart-plot";
   renderPlotDiv(plotId);
-  lineChart(`#${plotId}`, oneLine, 800, 600, "date", "number");
+  lineChart(plotId, oneLine, 800, 600, "date", "number");
 }
 
 export function renderMultiLinesChart() {
   const plotId = "line-chart-plot";
   renderPlotDiv(plotId);
 
-  lineChart(`#${plotId}`, multiLines, 800, 600, "date", "number", "group");
+  lineChart(plotId, multiLines, 800, 600, "date", "number", "group");
 }
 
 export function renderAreaChart() {

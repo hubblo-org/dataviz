@@ -1,58 +1,25 @@
-import { areaChart, stackedBarPlot } from "./plots";
+import { areaChart, correlogram, lineChart, stackedBarPlot } from "./plots";
 import { parseToBoolean, sanitizeNumber } from "./utils";
 
 const defaultWidth = "800";
 const defaultHeight = "600";
 const stackedBarPlotName = "stacked-bar-plot";
 const areaChartName = "area-chart";
+const correlogramName = "correlogram-plot";
+const lineChartName = "line-chart";
 
-export class StackedBarPlot extends HTMLElement {
-  content: string;
-  domains: string;
-  width: string = defaultWidth;
-  height: string = defaultHeight;
-  x: string;
-  y: string;
-
-  static get observedAttributes() {
-    return ["content", "domains", "width", "height", "x", "y", "fill"];
-  }
-  constructor() {
-    super();
-    this.content;
-    this.domains;
-    this.width;
-    this.height;
-    this.x;
-    this.y;
-  }
-  attributeChangedCallback(property: string, oldValue: string, newValue: string) {
-    if (oldValue === newValue) return;
-    this[property] = newValue;
-  }
-  connectedCallback() {
-    const shadow = this.attachShadow({ mode: "closed" });
-
-    const idNumber = document.querySelectorAll(stackedBarPlotName).length + 1;
-    this.id = `${stackedBarPlotName}-${idNumber}`;
-    const containerId = `${this.id}-container`;
-
-    const div = document.createElement("div");
-    div.setAttribute("id", containerId);
-
-    const width = sanitizeNumber(this.width);
-    const height = sanitizeNumber(this.height);
-    const domains = this.domains.split(",");
-    const dataToRender = JSON.parse(this.content);
-
-    const style = document.createElement("style");
-    style.innerHTML = `#${containerId} {margin: auto; width: ${width}px; }`;
-
-    const sbp = stackedBarPlot(this.id, dataToRender, width, height, domains, this.x, this.y);
-    shadow.append(div);
-    shadow.append(style);
-    div.append(sbp);
-  }
+function setupComponent(component: HTMLElement, componentName: string, width: number) {
+  const shadow = component.attachShadow({ mode: "closed" });
+  const idNumber = document.querySelectorAll(componentName).length + 1;
+  component.id = `${componentName}-${idNumber}`;
+  const containerId = `${component.id}-container`;
+  const container = document.createElement("div");
+  container.setAttribute("id", containerId);
+  const style = document.createElement("style");
+  style.innerHTML = `#${containerId} {margin: auto; width: ${width}px; }`;
+  shadow.append(style);
+  shadow.append(container);
+  return { shadow: shadow, containerId: containerId };
 }
 
 function addNormalize() {
@@ -68,6 +35,47 @@ function addNormalize() {
 
   return div;
 }
+
+export class LineChart extends HTMLElement {
+  content: string;
+  width: string = defaultWidth;
+  height: string = defaultHeight;
+  x: string;
+  y: string;
+  z?: string;
+
+  static get observedAttributes() {
+    return ["content", "width", "height", "x", "y", "z"];
+  }
+  attributeChangedCallback(property: string, oldValue: string, newValue: string) {
+    if (oldValue === newValue) return;
+    this[property] = newValue;
+  }
+  constructor() {
+    super();
+    this.content;
+    this.width;
+    this.height;
+    this.x;
+    this.y;
+    this.z;
+  }
+  connectedCallback() {
+    const width = sanitizeNumber(this.width);
+    const height = sanitizeNumber(this.height);
+    const dataToRender = JSON.parse(this.content);
+    const setup = setupComponent(this, correlogramName, width);
+    const container = setup.shadow.getElementById(setup.containerId);
+    if (this.z) {
+      const lc = lineChart(this.id, dataToRender, width, height, this.x, this.y, this.z);
+      container.append(lc);
+    } else {
+      const lc = lineChart(this.id, dataToRender, width, height, this.x, this.y);
+      container.append(lc);
+    }
+  }
+}
+
 export class AreaChart extends HTMLElement {
   content: string;
   width: string = defaultWidth;
@@ -98,14 +106,6 @@ export class AreaChart extends HTMLElement {
     this.normalizing;
   }
   connectedCallback() {
-    const shadow = this.attachShadow({ mode: "closed" });
-
-    const idNumber = document.querySelectorAll(areaChartName).length + 1;
-    const div = document.createElement("div");
-    this.id = `${areaChartName}-${idNumber}`;
-    const containerId = `${this.id}-container`;
-    div.setAttribute("id", containerId);
-
     const castWidth = sanitizeNumber(this.width);
     const castHeight = sanitizeNumber(this.height);
     const toNormalize = parseToBoolean(this.normalizing);
@@ -113,13 +113,12 @@ export class AreaChart extends HTMLElement {
     const xLabel = this.x;
     const yLabel = this.y;
     const zDimension = this.z;
-    const acId = this.id;
 
-    const style = document.createElement("style");
-    style.innerHTML = `#${containerId} {margin: auto; width: ${castWidth}px; }`;
+    const setup = setupComponent(this, areaChartName, castWidth);
+    const container = setup.shadow.getElementById(setup.containerId);
 
     const ac = areaChart(
-      acId,
+      this.id,
       parsedContent,
       castWidth,
       castHeight,
@@ -128,11 +127,86 @@ export class AreaChart extends HTMLElement {
       zDimension,
       toNormalize
     );
-    shadow.append(div);
-    shadow.append(style);
-    div.append(ac);
+    container.append(ac);
   }
 }
 
-customElements.define(stackedBarPlotName, StackedBarPlot);
+export class Correlogram extends HTMLElement {
+  content: string;
+  domain: string;
+  domains: string;
+  height: string = "800";
+  width: string = defaultWidth;
+
+  static get observedAttributes() {
+    return ["content", "domains", "width", "height", "domain"];
+  }
+  constructor() {
+    super();
+    this.content;
+    this.domain;
+    this.domains;
+    this.height;
+    this.width;
+  }
+  attributeChangedCallback(property: string, oldValue: string, newValue: string) {
+    if (oldValue === newValue) return;
+    this[property] = newValue;
+  }
+  connectedCallback() {
+    const width = sanitizeNumber(this.width);
+    const height = sanitizeNumber(this.height);
+    const setup = setupComponent(this, correlogramName, width);
+    const domains = this.domains.split(",");
+    const dataToRender = JSON.parse(this.content);
+    const style = document.createElement("style");
+    style.innerHTML = `#${setup.containerId} {margin: auto; width: ${width}px; }`;
+
+    const c = correlogram(this.id, dataToRender, width, height, this.domain, domains);
+    const container = setup.shadow.getElementById(setup.containerId);
+    container.append(c);
+  }
+}
+
+export class StackedBarPlot extends HTMLElement {
+  content: string;
+  domains: string;
+  width: string = defaultWidth;
+  height: string = defaultHeight;
+  x: string;
+  y: string;
+
+  static get observedAttributes() {
+    return ["content", "domains", "width", "height", "x", "y", "fill"];
+  }
+  constructor() {
+    super();
+    this.content;
+    this.domains;
+    this.width;
+    this.height;
+    this.x;
+    this.y;
+  }
+  attributeChangedCallback(property: string, oldValue: string, newValue: string) {
+    if (oldValue === newValue) return;
+    this[property] = newValue;
+  }
+  connectedCallback() {
+    const width = sanitizeNumber(this.width);
+    const height = sanitizeNumber(this.height);
+    const domains = this.domains.split(",");
+    const dataToRender = JSON.parse(this.content);
+
+    const setup = setupComponent(this, stackedBarPlotName, width);
+
+    const sbp = stackedBarPlot(this.id, dataToRender, width, height, domains, this.x, this.y);
+    const container = setup.shadow.getElementById(setup.containerId);
+    container.appendChild(sbp);
+  }
+}
+
 customElements.define(areaChartName, AreaChart);
+customElements.define(correlogramName, Correlogram);
+customElements.define(lineChartName, LineChart);
+customElements.define(stackedBarPlotName, StackedBarPlot);

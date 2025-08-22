@@ -401,6 +401,8 @@ export function correlogram<Type>(
     .attr("y", padding)
     .attr("dy", ".71em")
     .text((d) => d);
+
+  return svg.node();
 }
 
 /** Renders a select element allowing to hightlight the selected data group.
@@ -542,7 +544,7 @@ export function lineChart<Type>(
   yLabel: string,
   zDimension?: string
 ) {
-  let div = document.querySelector(nodeId);
+  let div = document.querySelector(`#${nodeId}`);
   div.innerHTML = "";
 
   const lineMarks = [
@@ -590,6 +592,7 @@ export function lineChart<Type>(
     });
 
     div.append(lineChart);
+    return lineChart;
   }
 }
 
