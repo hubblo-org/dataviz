@@ -1,12 +1,10 @@
 import { expect, $, browser } from "@wdio/globals";
 import * as matchers from "@testing-library/jest-dom/matchers";
 expect.extend(matchers);
-import { screen, within } from "@testing-library/dom";
 import "../../src/components";
 
-const checkboxAriaRole = '[role="checkbox"]';
+const inputCheckbox  = 'input[type="checkbox"]';
 const ariaLabelText = '[aria-label="text"]';
-const ariaLabelArea = '[aria-label="area"]';
 const expectedGroups = ["colocation", "hyperscaler", "retail"];
 
 const multiLines = JSON.stringify([
@@ -73,7 +71,7 @@ describe("areaChart with normalization component test suite", () => {
   }
   it("displays a checkbox allowing to normalize rendered values on area chart", async () => {
     const ac = setupAreaChart();
-    const acCheckbox = await $("area-chart").$(`${checkboxAriaRole} > input`);
+    const acCheckbox = await $("area-chart").shadow$(`${inputCheckbox}`);
     expect(acCheckbox).toBeDisplayed();
     expect(acCheckbox).toHaveText("Normalize values");
     expect(acCheckbox.getValue()).toBeTruthy();
@@ -82,7 +80,7 @@ describe("areaChart with normalization component test suite", () => {
 
   it("allows to display non normalized values when clicking on the normalize checkbox", async () => {
     const ac = setupAreaChart();
-    const acCheckbox = await $("area-chart").$(`${checkboxAriaRole} > input`);
+    const acCheckbox = await $("area-chart").shadow$(`${inputCheckbox}`);
     await acCheckbox.click();
     const svgAreaCharts = await $("area-chart").shadow$(`svg > ${ariaLabelText}`).$$("g");
     expectedGroups.forEach(async (group, index) => {
@@ -94,7 +92,7 @@ describe("areaChart with normalization component test suite", () => {
 
   it("displays the normalized area chart when the user clicks again on the normalize checkbox", async () => {
     const ac = setupAreaChart();
-    const acCheckbox = await $("area-chart").$(`${checkboxAriaRole} > input`);
+    const acCheckbox = await $("area-chart").shadow$(`${inputCheckbox}`);
     await acCheckbox.click();
     await acCheckbox.click();
     const swatchesDiv = await $("area-chart").shadow$("div").$("//div[contains(@class, 'swatches')]");
