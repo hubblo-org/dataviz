@@ -23,24 +23,30 @@ function setupComponent(component: HTMLElement, componentName: string, width: nu
   const shadow = component.attachShadow({ mode: "closed" });
   const idNumber = document.querySelectorAll(componentName).length + 1;
   component.id = `${componentName}-${idNumber}`;
+  component.style = `margin: auto; display: flex; flex-direction:column`;
   const containerId = `${component.id}-container`;
   const container = document.createElement("div");
   container.setAttribute("id", containerId);
   const style = document.createElement("style");
-  style.innerHTML = `#${containerId} {margin: auto; width: ${width}px; }`;
+  style.innerHTML = `#${containerId} {margin: auto; width: ${width}px; display: flex; flex-direction: column; }`;
   shadow.append(style);
   shadow.append(container);
   return { shadow: shadow, containerId: containerId };
 }
 
-function addNormalize() {
+function addNormalize(id: string) {
   const div = document.createElement("div");
+  div.setAttribute("id", `${id}-normalize-button-container`);
+
   const checkbox = document.createElement("input");
   checkbox.setAttribute("type", "checkbox");
-  checkbox.setAttribute("id", "toggle-normalize");
-  checkbox.id = "toggle-normalize";
+  checkbox.setAttribute("id", `${id}-normalize-checkbox`);
+  checkbox.checked = true;
+
   const label = document.createElement("label");
-  label.setAttribute("for", checkbox.id);
+  label.setAttribute("for", `${id}-normalize-checkbox`);
+  label.textContent = "Normalize values";
+
   div.append(label);
   div.append(checkbox);
 
@@ -54,6 +60,7 @@ export class AreaChart extends HTMLElement {
   x: string;
   y: string;
   z: string;
+  role: string;
   normalizing: string;
   castWidth: number;
   castHeight: number;
@@ -69,6 +76,7 @@ export class AreaChart extends HTMLElement {
   constructor() {
     super();
     this.content;
+    this.role;
     this.width;
     this.height;
     this.x;
@@ -77,6 +85,7 @@ export class AreaChart extends HTMLElement {
     this.normalizing;
   }
   connectedCallback() {
+    this.role = "figure";
     const castWidth = sanitizeNumber(this.width);
     const castHeight = sanitizeNumber(this.height);
     const toNormalize = parseToBoolean(this.normalizing);
@@ -88,8 +97,9 @@ export class AreaChart extends HTMLElement {
     const setup = setupComponent(this, areaChartName, castWidth);
     const container = setup.shadow.getElementById(setup.containerId);
 
+    const areaChartId = this.id;
     const ac = areaChart(
-      this.id,
+      areaChartId,
       parsedContent,
       castWidth,
       castHeight,
@@ -99,6 +109,42 @@ export class AreaChart extends HTMLElement {
       toNormalize
     );
     container.append(ac);
+
+    if (toNormalize) {
+      const normalizeDiv = addNormalize(areaChartId);
+      setup.shadow.append(normalizeDiv);
+
+      const normalizeCheckbox = setup.shadow.getElementById(`${areaChartId}-normalize-checkbox`);
+      (normalizeCheckbox as HTMLInputElement).addEventListener("click", function () {
+        if (normalizeCheckbox.checked) {
+          const acUpdated = areaChart(
+            areaChartId,
+            parsedContent,
+            castWidth,
+            castHeight,
+            xLabel,
+            yLabel,
+            zDimension,
+            true
+          );
+          container.innerHTML = "";
+          container.append(acUpdated);
+        } else if (!normalizeCheckbox.checked) {
+          const acUpdated = areaChart(
+            areaChartId,
+            parsedContent,
+            castWidth,
+            castHeight,
+            xLabel,
+            yLabel,
+            zDimension,
+            false
+          );
+          container.innerHTML = "";
+          container.append(acUpdated);
+        }
+      });
+    }
   }
 }
 
@@ -130,8 +176,6 @@ export class Correlogram extends HTMLElement {
     const setup = setupComponent(this, correlogramName, width);
     const domains = this.domains.split(",");
     const dataToRender = JSON.parse(this.content);
-    const style = document.createElement("style");
-    style.innerHTML = `#${setup.containerId} {margin: auto; width: ${width}px; }`;
 
     const c = correlogram(this.id, dataToRender, width, height, this.domain, domains);
     const container = setup.shadow.getElementById(setup.containerId);
