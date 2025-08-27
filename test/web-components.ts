@@ -60,7 +60,7 @@ ac.setAttribute("content", multiLines);
 ac.setAttribute("x", "date");
 ac.setAttribute("y", "number");
 ac.setAttribute("z", "group");
-ac.setAttribute("normalizing", "false");
+ac.setAttribute("normalizing", "true");
 div2.append(ac);
 
 const div3 = document.createElement("div");
@@ -124,3 +124,22 @@ sp.setAttribute("y", "waterUsage");
 sp.setAttribute("domain", "type");
 sp.setAttribute("domains", domains.toString());
 div7.append(sp);
+
+const isNotAnAxis = (value: string) => {
+  if (value === "type" || value == "status") {
+    return false;
+  }
+  return true;
+};
+
+const dimensions = Object.keys(dcData[0]).filter(isNotAnAxis);
+const domainsForPc = [...new Set(dcData.map((element) => element.type))];
+const div8 = document.createElement("div");
+div8.textContent = "Parallel Coordinates";
+body.append(div8);
+const pc = document.createElement("parallel-coordinates");
+pc.setAttribute("content", content);
+pc.setAttribute("dimensions", dimensions.toString());
+pc.setAttribute("domain", "type");
+pc.setAttribute("domains", domainsForPc.toString());
+div8.append(pc);

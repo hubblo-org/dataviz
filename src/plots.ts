@@ -699,6 +699,7 @@ export function parallelCoordinates<Type>(
   div.append(parallelCoordinates);
   div.append(highlightElements.label);
   div.append(highlightElements.select);
+  return parallelCoordinates;
 }
 
 /** Renders a sankey diagram for the provided data.

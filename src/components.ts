@@ -2,6 +2,7 @@ import {
   areaChart,
   correlogram,
   lineChart,
+  parallelCoordinates,
   sankeyDiagram,
   scatterPlot,
   stackedBarPlot
@@ -13,6 +14,7 @@ const defaultHeight = "600";
 const areaChartName = "area-chart";
 const correlogramName = "correlogram-plot";
 const lineChartName = "line-chart";
+const parallelCoordinatesName = "parallel-coordinates";
 const sankeyName = "sankey-diagram";
 const scatterplotName = "scatter-plot";
 const stackedBarPlotName = "stacked-bar-plot";
@@ -177,6 +179,52 @@ export class LineChart extends HTMLElement {
   }
 }
 
+export class ParallelCoordinates extends HTMLElement {
+  content: string;
+  width: string = defaultWidth;
+  height: string = defaultHeight;
+  dimensions: string;
+  domain: string;
+  domains: string;
+
+  static get observedAttributes() {
+    return ["content", "width", "height", "dimensions", "domain", "domains"];
+  }
+  attributeChangedCallback(property: string, oldValue: string, newValue: string) {
+    if (oldValue === newValue) return;
+    this[property] = newValue;
+  }
+  constructor() {
+    super();
+    this.content;
+    this.width;
+    this.height;
+    this.dimensions;
+    this.domain;
+    this.domains;
+  }
+  connectedCallback() {
+    const width = sanitizeNumber(this.width);
+    const height = sanitizeNumber(this.height);
+    const dataToRender = JSON.parse(this.content);
+    const dimensions = this.dimensions.split(",");
+    const domains = this.domains.split(",");
+    const setup = setupComponent(this, parallelCoordinatesName, width);
+    const container = setup.shadow.getElementById(setup.containerId);
+
+    const pc = parallelCoordinates(
+      this.id,
+      dataToRender,
+      width,
+      height,
+      dimensions,
+      this.domain,
+      domains
+    );
+    container.append(pc);
+  }
+}
+
 export class Sankey extends HTMLElement {
   content: string;
   width: string = defaultWidth;
@@ -298,6 +346,7 @@ export class StackedBarPlot extends HTMLElement {
 customElements.define(areaChartName, AreaChart);
 customElements.define(correlogramName, Correlogram);
 customElements.define(lineChartName, LineChart);
+customElements.define(parallelCoordinatesName, ParallelCoordinates);
 customElements.define(sankeyName, Sankey);
 customElements.define(scatterplotName, Scatterplot);
 customElements.define(stackedBarPlotName, StackedBarPlot);
