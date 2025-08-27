@@ -22,6 +22,10 @@
 		"@testing-library/jest-dom": "^6.6.3",
 		"@testing-library/user-event": "^14.6.1",
 		"@types/node": "^22.15.21",
+		"@wdio/browser-runner": "^9.19.2",
+		"@wdio/cli": "^9.19.2",
+		"@wdio/mocha-framework": "^9.19.2",
+		"@wdio/spec-reporter": "^9.19.2",
 		"jsdom": "^26.1.0",
 		"prettier": "3.5.3",
 		"vite": "^6.3.5",
@@ -29,6 +33,7 @@
 	},
 	"scripts": {
 		"testServer": "vite serve",
-		"test": "vitest"
+		"test": "vitest",
+		"wdio": "wdio run ./wdio.conf.ts"
 	}
 }
