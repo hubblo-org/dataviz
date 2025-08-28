@@ -34,14 +34,14 @@ function setupComponent(component: HTMLElement, componentName: string, width: nu
   return { shadow: shadow, containerId: containerId };
 }
 
-function addNormalize(id: string) {
+function addNormalize(id: string, width: number) {
   const div = document.createElement("div");
   div.setAttribute("id", `${id}-normalize-button-container`);
+  div.style = `width: ${width}px; margin:auto;`;
 
   const checkbox = document.createElement("input");
   checkbox.setAttribute("type", "checkbox");
   checkbox.setAttribute("id", `${id}-normalize-checkbox`);
-  checkbox.checked = true;
 
   const label = document.createElement("label");
   label.setAttribute("for", `${id}-normalize-checkbox`);
@@ -61,18 +61,21 @@ export class AreaChart extends HTMLElement {
   y: string;
   z: string;
   role: string;
-  normalizing: string;
+  title: string;
+  normalized: string = "false";
   castWidth: number;
   castHeight: number;
-  parsedContent: any;
+  normalizing?: string;
 
   static get observedAttributes() {
-    return ["content", "width", "height", "x", "y", "z", "normalizing"];
+    return ["content", "width", "height", "x", "y", "z", "title", "normalized", "normalizing"];
   }
+
   attributeChangedCallback(property: string, oldValue: string, newValue: string) {
     if (oldValue === newValue) return;
     this[property] = newValue;
   }
+
   constructor() {
     super();
     this.content;
@@ -82,13 +85,16 @@ export class AreaChart extends HTMLElement {
     this.x;
     this.y;
     this.z;
+    this.normalized;
     this.normalizing;
   }
+
   connectedCallback() {
     this.role = "figure";
+    const title = this.title;
     const castWidth = sanitizeNumber(this.width);
     const castHeight = sanitizeNumber(this.height);
-    const toNormalize = parseToBoolean(this.normalizing);
+    let normalized = parseToBoolean(this.normalized);
     const parsedContent = JSON.parse(this.content);
     const xLabel = this.x;
     const yLabel = this.y;
@@ -98,6 +104,7 @@ export class AreaChart extends HTMLElement {
     const container = setup.shadow.getElementById(setup.containerId);
 
     const areaChartId = this.id;
+
     const ac = areaChart(
       areaChartId,
       parsedContent,
@@ -106,17 +113,20 @@ export class AreaChart extends HTMLElement {
       xLabel,
       yLabel,
       zDimension,
-      toNormalize
+      normalized
     );
-    container.append(ac);
 
-    if (toNormalize) {
-      const normalizeDiv = addNormalize(areaChartId);
+    this.addFigureCaption(normalized, title, container as HTMLDivElement, ac);
+
+    if (this.normalizing) {
+      const normalizeDiv = addNormalize(areaChartId, castWidth);
       setup.shadow.append(normalizeDiv);
 
       const normalizeCheckbox = setup.shadow.getElementById(`${areaChartId}-normalize-checkbox`);
+      const that = this;
       (normalizeCheckbox as HTMLInputElement).addEventListener("click", function () {
         if (normalizeCheckbox.checked) {
+          normalized = true;
           const acUpdated = areaChart(
             areaChartId,
             parsedContent,
@@ -129,7 +139,9 @@ export class AreaChart extends HTMLElement {
           );
           container.innerHTML = "";
           container.append(acUpdated);
+          that.addFigureCaption(normalized, title, container as HTMLDivElement, acUpdated);
         } else if (!normalizeCheckbox.checked) {
+          normalized = false;
           const acUpdated = areaChart(
             areaChartId,
             parsedContent,
@@ -141,10 +153,26 @@ export class AreaChart extends HTMLElement {
             false
           );
           container.innerHTML = "";
-          container.append(acUpdated);
+          that.addFigureCaption(normalized, title, container as HTMLDivElement, acUpdated);
         }
       });
     }
+  }
+  addFigureCaption(toNormalize: boolean, title: string, container: HTMLDivElement, plot: any) {
+    const figCaption = document.createElement("figcaption");
+    if (toNormalize) {
+      container.appendChild(plot);
+      const figure = container.querySelector("figure");
+      figCaption.textContent = `${title}, normalized`;
+      figure.appendChild(figCaption);
+    } else if (!toNormalize) {
+      const figure = document.createElement("figure");
+      figCaption.textContent = `${title}`;
+      figure.appendChild(plot);
+      figure.appendChild(figCaption);
+      container.appendChild(figure);
+    }
+    return figCaption;
   }
 }
 

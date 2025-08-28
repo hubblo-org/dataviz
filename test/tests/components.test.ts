@@ -3,9 +3,24 @@ import * as matchers from "@testing-library/jest-dom/matchers";
 expect.extend(matchers);
 import "../../src/components";
 
-const inputCheckbox  = 'input[type="checkbox"]';
+const inputCheckbox = 'input[type="checkbox"]';
 const ariaLabelText = '[aria-label="text"]';
 const expectedGroups = ["colocation", "hyperscaler", "retail"];
+
+function setupAreaChart(normalized: string, normalizing: string) {
+  const ac = document.createElement("area-chart");
+  ac.setAttribute("content", multiLines);
+  ac.setAttribute("x", "date");
+  ac.setAttribute("y", "number");
+  ac.setAttribute("z", "group");
+  ac.setAttribute("title", title);
+  ac.setAttribute("normalized", normalized);
+  ac.setAttribute("normalizing", normalizing);
+  document.body.appendChild(ac);
+  return ac;
+}
+const title = "Data centers";
+const titleForNormalizedAreaChart = `${title}, normalized`
 
 const multiLines = JSON.stringify([
   { group: "colocation", date: "2013-01-01", number: 45 },
@@ -33,22 +48,27 @@ const multiLines = JSON.stringify([
   { group: "hyperscaler", date: "2019-01-01", number: 60 },
   { group: "hyperscaler", date: "2020-01-01", number: 20 }
 ]);
-describe("areaChart without normalization component test suite", () => {
-  function setupAreaChart() {
-    const ac = document.createElement("area-chart");
-    ac.setAttribute("content", multiLines);
-    ac.setAttribute("x", "date");
-    ac.setAttribute("y", "number");
-    ac.setAttribute("z", "group");
-    ac.setAttribute("normalizing", "false");
-    document.body.appendChild(ac);
-    return ac;
-  }
 
+describe("normalized areaChart component test suite", () => {
+  it("displays a normalized area chart with a title", async () => {
+    const ac = setupAreaChart("true", "false");
+    const svgAreaCaption = await $("area-chart").shadow$("div > figure").$("figcaption");
+    expect(await svgAreaCaption.getText()).toEqual(`${titleForNormalizedAreaChart}`);
+    ac.remove();
+  });
+});
+
+describe("areaChart without normalization component test suite", () => {
+  it("displays a title for the component", async () => {
+    const ac = setupAreaChart("false", "false");
+    const svgAreaCaption = await $("area-chart").shadow$("div > figure").$("figcaption");
+    expect(await svgAreaCaption.getText()).toEqual(`${title}`);
+    ac.remove();
+  });
   //Not entirely satisfying test as it relies heavily on the SVG structure generated
   //by Observable Plot, but as close as what the end user will see as it can get.
   it("displays an area chart for each datacenter group", async () => {
-    const ac = setupAreaChart();
+    const ac = setupAreaChart("false", "false");
     const svgAreaCharts = await $("area-chart").shadow$(`svg > ${ariaLabelText}`).$$("g");
     expectedGroups.forEach(async (group, index) => {
       expect(await svgAreaCharts[index].getText()).toEqual(group);
@@ -59,18 +79,8 @@ describe("areaChart without normalization component test suite", () => {
 });
 
 describe("areaChart with normalization component test suite", () => {
-  function setupAreaChart() {
-    const ac = document.createElement("area-chart");
-    ac.setAttribute("content", multiLines);
-    ac.setAttribute("x", "date");
-    ac.setAttribute("y", "number");
-    ac.setAttribute("z", "group");
-    ac.setAttribute("normalizing", "true");
-    document.body.appendChild(ac);
-    return ac;
-  }
-  it("displays a checkbox allowing to normalize rendered values on area chart", async () => {
-    const ac = setupAreaChart();
+  it("displays a checkbox allowing to normalize rendered values on the area chart", async () => {
+    const ac = setupAreaChart("false", "true");
     const acCheckbox = await $("area-chart").shadow$(`${inputCheckbox}`);
     expect(acCheckbox).toBeDisplayed();
     expect(acCheckbox).toHaveText("Normalize values");
@@ -78,25 +88,36 @@ describe("areaChart with normalization component test suite", () => {
     ac.remove();
   });
 
-  it("allows to display non normalized values when clicking on the normalize checkbox", async () => {
-    const ac = setupAreaChart();
+  it("displays a title for the component with normalization", async () => {
+    const ac = setupAreaChart("false", "true");
     const acCheckbox = await $("area-chart").shadow$(`${inputCheckbox}`);
+    await acCheckbox.click();
+    const svgAreaCaption = await $("area-chart").shadow$("div > figure").$("figcaption");
+    expect(await svgAreaCaption.getText()).toEqual(`${titleForNormalizedAreaChart}`);
+    ac.remove();
+  });
+
+  it("displays the normalized area chart when the user clicks on the normalize checkbox", async () => {
+    const ac = setupAreaChart("false", "true");
+    const acCheckbox = await $("area-chart").shadow$(`${inputCheckbox}`);
+    await acCheckbox.click();
+    const swatchesDiv = await $("area-chart")
+      .shadow$("div")
+      .$("//div[contains(@class, 'swatches')]");
+    await expect(swatchesDiv).toBeDisplayed();
+    ac.remove();
+  });
+
+  it("allows to display non normalized area charts again when clicking twice on the normalize checkbox", async () => {
+    const ac = setupAreaChart("false", "true");
+    const acCheckbox = await $("area-chart").shadow$(`${inputCheckbox}`);
+    await acCheckbox.click();
     await acCheckbox.click();
     const svgAreaCharts = await $("area-chart").shadow$(`svg > ${ariaLabelText}`).$$("g");
     expectedGroups.forEach(async (group, index) => {
       expect(await svgAreaCharts[index].getText()).toEqual(group);
       expect(await svgAreaCharts[index]).toBeDisplayed();
     });
-    ac.remove();
-  });
-
-  it("displays the normalized area chart when the user clicks again on the normalize checkbox", async () => {
-    const ac = setupAreaChart();
-    const acCheckbox = await $("area-chart").shadow$(`${inputCheckbox}`);
-    await acCheckbox.click();
-    await acCheckbox.click();
-    const swatchesDiv = await $("area-chart").shadow$("div").$("//div[contains(@class, 'swatches')]");
-    await expect(swatchesDiv).toBeDisplayed();
     ac.remove();
   });
 });
