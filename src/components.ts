@@ -123,6 +123,7 @@ export class AreaChart extends HTMLElement {
       setup.shadow.append(normalizeDiv);
 
       const normalizeCheckbox = setup.shadow.getElementById(`${areaChartId}-normalize-checkbox`);
+      normalizeCheckbox.checked = normalized;
       const that = this;
       (normalizeCheckbox as HTMLInputElement).addEventListener("click", function () {
         if (normalizeCheckbox.checked) {

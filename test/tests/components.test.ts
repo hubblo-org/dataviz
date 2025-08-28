@@ -20,7 +20,7 @@ function setupAreaChart(normalized: string, normalizing: string) {
   return ac;
 }
 const title = "Data centers";
-const titleForNormalizedAreaChart = `${title}, normalized`
+const titleForNormalizedAreaChart = `${title}, normalized`;
 
 const multiLines = JSON.stringify([
   { group: "colocation", date: "2013-01-01", number: 45 },
@@ -84,7 +84,6 @@ describe("areaChart with normalization component test suite", () => {
     const acCheckbox = await $("area-chart").shadow$(`${inputCheckbox}`);
     expect(acCheckbox).toBeDisplayed();
     expect(acCheckbox).toHaveText("Normalize values");
-    expect(acCheckbox.getValue()).toBeTruthy();
     ac.remove();
   });
 
@@ -97,7 +96,8 @@ describe("areaChart with normalization component test suite", () => {
     ac.remove();
   });
 
-  it("displays the normalized area chart when the user clicks on the normalize checkbox", async () => {
+  // When the normalized area chart is visible, the legend linking colors with data groups ("swatches") will be visible to the user.
+  it("displays the normalized area chart with a legend when the user clicks on the normalize checkbox", async () => {
     const ac = setupAreaChart("false", "true");
     const acCheckbox = await $("area-chart").shadow$(`${inputCheckbox}`);
     await acCheckbox.click();
@@ -112,6 +112,20 @@ describe("areaChart with normalization component test suite", () => {
     const ac = setupAreaChart("false", "true");
     const acCheckbox = await $("area-chart").shadow$(`${inputCheckbox}`);
     await acCheckbox.click();
+    await acCheckbox.click();
+    const svgAreaCharts = await $("area-chart").shadow$(`svg > ${ariaLabelText}`).$$("g");
+    expectedGroups.forEach(async (group, index) => {
+      expect(await svgAreaCharts[index].getText()).toEqual(group);
+      expect(await svgAreaCharts[index]).toBeDisplayed();
+    });
+    ac.remove();
+  });
+
+  it("displays a normalized area chart and allows switching between displays when both normalized and normalizing are true", async () => {
+    const ac = setupAreaChart("true", "true");
+    const acCheckbox = await $("area-chart").shadow$(`${inputCheckbox}`);
+    const svgAreaCaption = await $("area-chart").shadow$("div > figure").$("figcaption");
+    expect(await svgAreaCaption.getText()).toEqual(`${titleForNormalizedAreaChart}`);
     await acCheckbox.click();
     const svgAreaCharts = await $("area-chart").shadow$(`svg > ${ariaLabelText}`).$$("g");
     expectedGroups.forEach(async (group, index) => {
