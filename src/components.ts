@@ -208,7 +208,8 @@ export class Correlogram extends HTMLElement {
 
     const c = correlogram(this.id, dataToRender, width, height, this.domain, domains);
     const container = setup.shadow.getElementById(setup.containerId);
-    container.append(c);
+    container.append(c.legend);
+    container.append(c.svg);
   }
 }
 

@@ -91,6 +91,7 @@ export function addLegend(
   }
 
   select(legendWrapperId).attr("style", `width: ${width}px; display: flex; margin-bottom: 12px;`);
+  return legend;
 }
 
 export function addLogo(nodeId: string, logo: string) {
@@ -314,7 +315,13 @@ export function correlogram<Type>(
     symbolsFill.map((s) => symbol().type(s)())
   );
 
-  addLegend(nodeId, width, color.domain(), color as ColorFunction, symbolize as SymbolFunction);
+  const legend = addLegend(
+    nodeId,
+    width,
+    color.domain(),
+    color as ColorFunction,
+    symbolize as SymbolFunction
+  );
 
   const svg = select(`#${nodeId}`)
     .append("svg")
@@ -402,7 +409,7 @@ export function correlogram<Type>(
     .attr("dy", ".71em")
     .text((d) => d);
 
-  return svg.node();
+  return { legend: legend.node(), svg: svg.node() };
 }
 
 /** Renders a select element allowing to hightlight the selected data group.
