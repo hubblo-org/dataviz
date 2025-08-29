@@ -19,8 +19,8 @@ const sankeyName = "sankey-diagram";
 const scatterplotName = "scatter-plot";
 const stackedBarPlotName = "stacked-bar-plot";
 
-function setupComponent(component: HTMLElement, componentName: string, width: number) {
-  const shadow = component.attachShadow({ mode: "closed" });
+function setupComponent(component: HTMLElement, mode: ShadowRootMode, componentName: string, width: number) {
+  const shadow = component.attachShadow({ mode: mode });
   const idNumber = document.querySelectorAll(componentName).length + 1;
   component.id = `${componentName}-${idNumber}`;
   component.style = `margin: auto; display: flex; flex-direction:column`;
@@ -100,7 +100,7 @@ export class AreaChart extends HTMLElement {
     const yLabel = this.y;
     const zDimension = this.z;
 
-    const setup = setupComponent(this, areaChartName, castWidth);
+    const setup = setupComponent(this, "closed", areaChartName, castWidth);
     const container = setup.shadow.getElementById(setup.containerId);
 
     const areaChartId = this.id;
@@ -202,7 +202,7 @@ export class Correlogram extends HTMLElement {
   connectedCallback() {
     const width = sanitizeNumber(this.width);
     const height = sanitizeNumber(this.height);
-    const setup = setupComponent(this, correlogramName, width);
+    const setup = setupComponent(this, "closed", correlogramName, width);
     const domains = this.domains.split(",");
     const dataToRender = JSON.parse(this.content);
 
@@ -241,7 +241,7 @@ export class LineChart extends HTMLElement {
     const width = sanitizeNumber(this.width);
     const height = sanitizeNumber(this.height);
     const dataToRender = JSON.parse(this.content);
-    const setup = setupComponent(this, correlogramName, width);
+    const setup = setupComponent(this, "closed", correlogramName, width);
     const container = setup.shadow.getElementById(setup.containerId);
     if (this.z) {
       const lc = lineChart(this.id, dataToRender, width, height, this.x, this.y, this.z);
@@ -283,7 +283,7 @@ export class ParallelCoordinates extends HTMLElement {
     const dataToRender = JSON.parse(this.content);
     const dimensions = this.dimensions.split(",");
     const domains = this.domains.split(",");
-    const setup = setupComponent(this, parallelCoordinatesName, width);
+    const setup = setupComponent(this, "open", parallelCoordinatesName, width);
     const container = setup.shadow.getElementById(setup.containerId);
 
     const pc = parallelCoordinates(
@@ -323,7 +323,7 @@ export class Sankey extends HTMLElement {
     const width = sanitizeNumber(this.width);
     const height = sanitizeNumber(this.height);
 
-    const setup = setupComponent(this, sankeyName, width);
+    const setup = setupComponent(this, "closed", sankeyName, width);
     const container = setup.shadow.getElementById(setup.containerId);
 
     const dataToRender = JSON.parse(this.content);
@@ -363,7 +363,7 @@ export class Scatterplot extends HTMLElement {
     const height = sanitizeNumber(this.height);
     const dataToRender = JSON.parse(this.content);
     const domains = this.domains.split(",");
-    const setup = setupComponent(this, scatterplotName, width);
+    const setup = setupComponent(this, "closed", scatterplotName, width);
     const container = setup.shadow.getElementById(setup.containerId);
     const sp = scatterPlot(
       this.id,
@@ -409,7 +409,7 @@ export class StackedBarPlot extends HTMLElement {
     const domains = this.domains.split(",");
     const dataToRender = JSON.parse(this.content);
 
-    const setup = setupComponent(this, stackedBarPlotName, width);
+    const setup = setupComponent(this, "closed", stackedBarPlotName, width);
 
     const sbp = stackedBarPlot(this.id, dataToRender, width, height, domains, this.x, this.y);
     const container = setup.shadow.getElementById(setup.containerId);
