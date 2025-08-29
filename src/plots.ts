@@ -412,6 +412,29 @@ export function correlogram<Type>(
   return { legend: legend.node(), svg: svg.node() };
 }
 
+function highlightEvent(
+  parent: HTMLSelectElement,
+  selector: HTMLElement,
+  className: string,
+  initialSelection: string,
+  color: ColorFunction
+) {
+  const selectedProperty: string = parent.value;
+  select(selector)
+    .select("svg")
+    .select(`.${className}`)
+    .selectAll("path")
+    .each(function () {
+      const line = select(this);
+      const title = line.select("title");
+
+      if (title.text() === selectedProperty || selectedProperty === initialSelection) {
+        line.attr("stroke", color(title.text()));
+      } else if (title.text() !== selectedProperty && selectedProperty !== initialSelection) {
+        line.attr("stroke", "lightgrey");
+      }
+    });
+}
 /** Renders a select element allowing to hightlight the selected data group.
  *
  * For a given parent SVG path, select all children SVG paths and modify their stroke color
@@ -422,13 +445,11 @@ export function correlogram<Type>(
  * @param color - The color function, associating a domain with a color.
  */
 export function highlight(
+  nodeId: string,
   className: string,
   domains: string[],
   color: ColorFunction
-): {
-  label: HTMLLabelElement;
-  select: HTMLSelectElement;
-} {
+) {
   const highlightElement = document.createElement("select");
   const highlightLabel = document.createElement("label");
   const initialSelection = "none";
@@ -437,21 +458,7 @@ export function highlight(
   highlightElement.setAttribute("id", "highlight-category");
   highlightElement.setAttribute("style", selectStyle);
 
-  highlightElement.addEventListener("change", function () {
-    const selectedProperty: string = this.value;
-    select(`.${className}`)
-      .selectAll("path")
-      .each(function () {
-        const line = select(this);
-        const title = line.select("title");
-
-        if (title.text() === selectedProperty || selectedProperty === initialSelection) {
-          line.attr("stroke", color(title.text()));
-        } else if (title.text() !== selectedProperty && selectedProperty !== initialSelection) {
-          line.attr("stroke", "lightgrey");
-        }
-      });
-  });
+  const component = select(`#${nodeId}`).node();
 
   const options = domains;
   if (!options.includes(initialSelection)) {
@@ -470,7 +477,21 @@ export function highlight(
   });
   optionsElements.forEach((element) => highlightElement.append(element));
 
-  return { label: highlightLabel, select: highlightElement };
+  if (component.shadowRoot != null) {
+    const divInShadowDom = component.shadowRoot.getElementById(`${component.id}-container`);
+    highlightElement.addEventListener("change", function () {
+      highlightEvent(this, divInShadowDom, className, initialSelection, color);
+    });
+    divInShadowDom.append(highlightLabel);
+    divInShadowDom.append(highlightElement);
+  } else {
+    const divInDom = document.getElementById(nodeId);
+    highlightElement.addEventListener("change", function () {
+      highlightEvent(this, divInDom, className, initialSelection, color);
+    });
+    divInDom.append(highlightLabel);
+    divInDom.append(highlightElement);
+  }
 }
 
 /** Renders a bar plot, with each bar aligned horizontally.
@@ -702,10 +723,8 @@ export function parallelCoordinates<Type>(
     marks: marks
   });
 
-  const highlightElements = highlight(lineClassName, domains, color as ColorFunction);
+  highlight(nodeId, lineClassName, domains, color as ColorFunction);
   div.append(parallelCoordinates);
-  div.append(highlightElements.label);
-  div.append(highlightElements.select);
   return parallelCoordinates;
 }
 

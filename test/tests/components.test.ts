@@ -1,9 +1,11 @@
 import { expect, $, browser } from "@wdio/globals";
 import * as matchers from "@testing-library/jest-dom/matchers";
+import { dcData } from "../data/data";
 expect.extend(matchers);
 import "../../src/components";
 
 const inputCheckbox = 'input[type="checkbox"]';
+const inputSelect = 'input[type="select"]';
 const ariaLabelText = '[aria-label="text"]';
 const expectedGroups = ["colocation", "hyperscaler", "retail"];
 
@@ -133,5 +135,56 @@ describe("areaChart with normalization component test suite", () => {
       expect(await svgAreaCharts[index]).toBeDisplayed();
     });
     ac.remove();
+  });
+});
+
+describe("parallel coordinates component test suite", () => {
+  const isNotAnAxis = (value: string) => {
+    if (value === "type" || value == "status") {
+      return false;
+    }
+    return true;
+  };
+  const content = JSON.stringify(dcData);
+  const dimensions = Object.keys(dcData[0]).filter(isNotAnAxis);
+  const domains = [...new Set(dcData.map((element) => element.type))];
+  function setupParallelCoordinates() {
+    const pc = document.createElement("parallel-coordinates");
+    pc.setAttribute("content", content);
+    pc.setAttribute("dimensions", dimensions.toString());
+    pc.setAttribute("domain", "type");
+    pc.setAttribute("domains", domains.toString());
+    document.body.appendChild(pc);
+    return pc;
+  }
+  it("displays the parallel-coordinates plot, and an element to allow highlighting the selected group elements", async () => {
+    const pc = setupParallelCoordinates();
+    const svg = await $("parallel-coordinates").shadow$("svg");
+    const highlight = await $("parallel-coordinates").shadow$("select");
+    await highlight.selectByAttribute("value", "hyperscaler");
+    expect(svg).toBeDisplayed();
+    expect(highlight).toBeDisplayed();
+    expect(await highlight.getValue()).toEqual("hyperscaler");
+    pc.remove();
+  });
+
+  it("highlights the selected group elements on the parallel-coordinates plot", async () => {
+    const pc = setupParallelCoordinates();
+    const highlight = await $("parallel-coordinates").shadow$("select");
+    await highlight.selectByAttribute("value", "hyperscaler");
+    const paths = await $("parallel-coordinates").shadow$("svg > .line").$$("path");
+    const otherPaths = await paths.filter(async (path) => (await path.getText()) != "hyperscaler");
+    const hyperscalerPaths = await paths.filter(
+      async (path) => (await path.getText()) === "hyperscaler"
+    );
+    hyperscalerPaths.forEach(async (path) => {
+      const colorAttribute = await path.getAttribute("stroke");
+      expect(await colorAttribute).not.toEqual("lightgrey");
+    });
+    otherPaths.forEach(async (path) => {
+      const colorAttribute = await path.getAttribute("stroke");
+      expect(await colorAttribute).toEqual("lightgrey");
+    });
+    pc.remove();
   });
 });
