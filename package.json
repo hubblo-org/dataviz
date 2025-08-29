@@ -34,6 +34,7 @@
 	"scripts": {
 		"testServer": "vite serve",
 		"test": "vitest",
-		"wdio": "wdio run ./wdio.conf.ts"
+		"wdio": "wdio run ./wdio.conf.ts",
+		"testWebComponents": "wdio run ./wdio.conf.ts --spec test/tests/components.test.ts"
 	}
 }

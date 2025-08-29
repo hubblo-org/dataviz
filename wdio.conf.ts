@@ -54,7 +54,8 @@ export const config: WebdriverIO.Config = {
   capabilities: [
     {
       // capabilities for local browser web tests
-      browserName: "firefox" // or "firefox", "microsoftedge", "safari"
+      browserName: "firefox", // or "firefox", "microsoftedge", "safari"
+      "moz:firefoxOptions": { prefs: { "browser.download.dir": "/opt/wdio/firefox" } }
     }
   ],
 
