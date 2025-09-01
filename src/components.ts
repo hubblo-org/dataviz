@@ -7,7 +7,7 @@ import {
   scatterPlot,
   stackedBarPlot
 } from "./plots";
-import { parseToBoolean, sanitizeNumber } from "./utils";
+import { normalizeValues, parseToBoolean, sanitizeNumber } from "./utils";
 
 const defaultWidth = "800";
 const defaultHeight = "600";
@@ -394,6 +394,7 @@ export class StackedBarPlot extends HTMLElement {
   height: string = defaultHeight;
   x: string;
   y: string;
+  fill?: string;
 
   static get observedAttributes() {
     return ["content", "domains", "width", "height", "x", "y", "fill"];
@@ -406,6 +407,7 @@ export class StackedBarPlot extends HTMLElement {
     this.height;
     this.x;
     this.y;
+    this.fill;
   }
   attributeChangedCallback(property: string, oldValue: string, newValue: string) {
     if (oldValue === newValue) return;
@@ -417,11 +419,28 @@ export class StackedBarPlot extends HTMLElement {
     const domains = this.domains.split(",");
     const dataToRender = JSON.parse(this.content);
 
-    const setup = setupComponent(this, "closed", stackedBarPlotName, width);
+    const setup = setupComponent(this, "open", stackedBarPlotName, width);
 
-    const sbp = stackedBarPlot(this.id, dataToRender, width, height, domains, this.x, this.y);
-    const container = setup.shadow.getElementById(setup.containerId);
-    container.appendChild(sbp);
+    if (this.fill) {
+      const normalizedData = normalizeValues(dataToRender);
+      const domains = [...new Set(normalizedData.map((element) => element[this.fill]))];
+      const sbp = stackedBarPlot(
+        this.id,
+        normalizedData,
+        width,
+        height,
+        domains,
+        this.x,
+        this.y,
+        this.fill
+      );
+      const container = setup.shadow.getElementById(setup.containerId);
+      container.appendChild(sbp);
+    } else {
+      const sbp = stackedBarPlot(this.id, dataToRender, width, height, domains, this.x, this.y);
+      const container = setup.shadow.getElementById(setup.containerId);
+      container.appendChild(sbp);
+    }
   }
 }
 

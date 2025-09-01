@@ -153,7 +153,13 @@ export function addSelect<Type>(
   const divForSelect = document.querySelector(`#${selectContainerId}`);
 
   if (!divForSelect) {
-    const parent = document.getElementById(nodeId).parentElement.nodeName;
+    let parent;
+    const container = document.getElementById(nodeId);
+    if (container.shadowRoot != null) {
+      parent = container.shadowRoot.getElementById(`${nodeId}-container`);
+    } else {
+      parent = document.getElementById(nodeId).parentElement.nodeName;
+    }
     const divForSelect = select(parent).append("div").attr("id", selectContainerId);
     center(selectContainerId, width);
 
@@ -173,15 +179,21 @@ export function addSelect<Type>(
 
     const options = Object.keys(data[0]).filter(isNotAnAxis);
     options.forEach((option) =>
-      select(`#${selectId}`)
+      select(parent)
+        .select(`#${selectId}`)
         .append("option")
         .attr("value", option)
         .attr("id", `${nodeId}-${option}`)
         .text(option)
     );
 
-    const selection = document.getElementById(`${initialOptionId}`);
-    (selection as HTMLOptionElement).selected = true;
+    if (container.shadowRoot != null) {
+      const selection = container.shadowRoot.getElementById(`${initialOptionId}`);
+      (selection as HTMLOptionElement).selected = true;
+    } else {
+      const selection = document.getElementById(`${initialOptionId}`);
+      (selection as HTMLOptionElement).selected = true;
+    }
   }
   return selectId;
 }
@@ -482,8 +494,11 @@ export function highlight(
     highlightElement.addEventListener("change", function () {
       highlightEvent(this, divInShadowDom, className, initialSelection, color);
     });
-    divInShadowDom.append(highlightLabel);
-    divInShadowDom.append(highlightElement);
+    const containerForSelect = document.createElement("div");
+    containerForSelect.appendChild(highlightLabel);
+    containerForSelect.appendChild(highlightElement);
+
+    divInShadowDom.append(containerForSelect);
   } else {
     const divInDom = document.getElementById(nodeId);
     highlightElement.addEventListener("change", function () {
@@ -723,8 +738,8 @@ export function parallelCoordinates<Type>(
     marks: marks
   });
 
-  highlight(nodeId, lineClassName, domains, color as ColorFunction);
   div.append(parallelCoordinates);
+  highlight(nodeId, lineClassName, domains, color as ColorFunction);
   return parallelCoordinates;
 }
 
@@ -989,17 +1004,40 @@ export function stackedBarPlot<Type>(
 
   if (fillLabel) {
     const selectId = addSelect(nodeId, data, xLabel, yLabel, width, fillLabel);
+    let selectElement: HTMLSelectElement;
+    const container = document.getElementById(nodeId);
 
-    const selectElement: HTMLSelectElement = document.querySelector(`#${selectId}`);
+    if (container.shadowRoot != null) {
+      selectElement = container.shadowRoot.getElementById(selectId);
+    } else {
+      selectElement = document.getElementById(selectId);
+    }
     selectElement.addEventListener("change", function () {
       const selectedProperty = this.value;
+      const fieldDomains = [...new Set(data.map((element: Type) => element[selectedProperty]))];
       const propertyId = `${nodeId}-${selectedProperty}`;
       selectElement.value = selectedProperty;
-      const option = document.getElementById(propertyId);
-      (option as HTMLOptionElement).selected = true;
+      if (container.shadowRoot != null) {
+        const option = container.shadowRoot.getElementById(propertyId);
+        container.shadowRoot.getElementById(`${nodeId}-container`).innerHTML = "";
+        const sbp = stackedBarPlot(
+          nodeId,
+          data,
+          width,
+          height,
+          fieldDomains,
+          xLabel,
+          yLabel,
+          selectedProperty
+        );
 
-      const fieldDomains = [...new Set(data.map((element: Type) => element[selectedProperty]))];
-      stackedBarPlot(nodeId, data, width, height, fieldDomains, xLabel, yLabel, selectedProperty);
+        container.shadowRoot.getElementById(`${nodeId}-container`).appendChild(sbp);
+        (option as HTMLOptionElement).selected = true;
+      } else {
+        const option = document.getElementById(propertyId);
+        (option as HTMLOptionElement).selected = true;
+        stackedBarPlot(nodeId, data, width, height, fieldDomains, xLabel, yLabel, selectedProperty);
+      }
     });
   }
   return barPlot;

@@ -188,3 +188,25 @@ describe("parallel coordinates component test suite", () => {
     pc.remove();
   });
 });
+
+describe("stackedBarPlot component test suite", () => {
+  const content = JSON.stringify(dcData);
+  const domains = [...new Set(dcData.map((element) => element.power))];
+  function setupStackedBarPlot() {
+    const sbp = document.createElement("stacked-bar-plot");
+    sbp.setAttribute("content", content);
+    sbp.setAttribute("domains", domains.toString());
+    sbp.setAttribute("x", "status");
+    sbp.setAttribute("y", "type");
+    sbp.setAttribute("fill", "power");
+    document.body.appendChild(sbp);
+    return sbp;
+  }
+
+  it("allows to select a dataset property to modify data distribution on the plot", async () => {
+    const sbp = setupStackedBarPlot();
+    const select = await $("stacked-bar-plot").shadow$("div > div > select");
+    expect(select).toBeDisplayed();
+    expect(await select.getValue()).toEqual("power");
+  });
+});
