@@ -19,7 +19,12 @@ const sankeyName = "sankey-diagram";
 const scatterplotName = "scatter-plot";
 const stackedBarPlotName = "stacked-bar-plot";
 
-function setupComponent(component: HTMLElement, mode: ShadowRootMode, componentName: string, width: number) {
+function setupComponent(
+  component: HTMLElement,
+  mode: ShadowRootMode,
+  componentName: string,
+  width: number
+) {
   const shadow = component.attachShadow({ mode: mode });
   const idNumber = document.querySelectorAll(componentName).length + 1;
   component.id = `${componentName}-${idNumber}`;
@@ -296,6 +301,9 @@ export class ParallelCoordinates extends HTMLElement {
       domains
     );
     container.append(pc);
+
+    const style = container.getElementsByTagName("style")[0];
+    style.innerHTML = `#${setup.containerId} {margin: auto; width: ${width}px; display: flex; flex-direction: column-reverse; }`;
   }
 }
 
