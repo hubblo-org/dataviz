@@ -20,5 +20,5 @@ export {
   hexagonCoordinates,
   rewind
 } from "./carto";
-export { normalizeValues, sanitizeNumber } from "./utils";
-export { AreaChart } from "./components";
+export { formatForTreemap, normalizeValues, sanitizeNumber } from "./utils";
+export { AreaChart } from "./components";

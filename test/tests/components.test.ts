@@ -3,6 +3,7 @@ import * as matchers from "@testing-library/jest-dom/matchers";
 import { dcData } from "../data/data";
 expect.extend(matchers);
 import "../../src/components";
+import { formatForTreemap } from "../../src";
 
 const inputCheckbox = 'input[type="checkbox"]';
 const inputSelect = 'input[type="select"]';
@@ -208,5 +209,25 @@ describe("stackedBarPlot component test suite", () => {
     const select = await $("stacked-bar-plot").shadow$("div > div > select");
     expect(select).toBeDisplayed();
     expect(await select.getValue()).toEqual("power");
+    sbp.remove();
+  });
+});
+
+describe("treemap component test suite", () => {
+  const categories = ["power", "waterUsage", "surface"];
+  const formattedData = formatForTreemap("dc_data", categories, dcData);
+  const content = JSON.stringify(dcData);
+  function setupTreemap() {
+    const tmap = document.createElement("treemap-plot");
+    tmap.setAttribute("content", content);
+    tmap.setAttribute("name", "dc_data");
+    document.body.appendChild(tmap);
+    return tmap;
+  }
+  it("displays a legend with the categories represented on the treemap", async () => {
+    const tmap = setupTreemap();
+    const legend = await $("treemap-plot").shadow$("div").$("aria/treemap legend");
+    expect(legend).toBeDisplayed();
+    tmap.remove();
   });
 });

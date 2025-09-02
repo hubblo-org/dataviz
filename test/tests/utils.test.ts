@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { dcData } from "../data/data";
-import { normalizeValues, sanitizeNumber } from "../../src";
+import { formatForTreemap, normalizeValues, sanitizeNumber } from "../../src";
 import { parseToBoolean } from "../../src/utils";
 
 describe("normalizeValues test suite", () => {
@@ -18,7 +18,7 @@ describe("normalizeValues test suite", () => {
         status: "open",
         power: 3,
         waterUsage: 3,
-        surface: 2750, 
+        surface: 2750
       },
       {
         type: "hyperscaler",
@@ -32,7 +32,7 @@ describe("normalizeValues test suite", () => {
         status: "open",
         power: 7.5,
         waterUsage: 6,
-        surface: 7500 
+        surface: 7500
       },
       {
         type: "hyperscaler",
@@ -87,5 +87,15 @@ describe("parseToBoolean test suite", () => {
     expect(() => parseToBoolean(string)).toThrowError(
       /Provided string cannot be parsed as a boolean$/
     );
+  });
+});
+
+describe("formatForTreemap test suite", () => {
+  it("converts a data structure to a tree structure usable for a treemap", () => {
+    const categories = Object.keys(dcData);
+    const tree = formatForTreemap("dcData", categories, dcData);
+    tree.children.forEach((leaf) => {
+      leaf.children.forEach((obj) => expect(obj.value).toBeTypeOf("number"));
+    });
   });
 });

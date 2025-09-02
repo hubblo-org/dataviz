@@ -1,3 +1,26 @@
+interface Leaf {
+  name: string;
+  value: number;
+}
+
+export function formatForTreemap(name: string, categories: string[], data: object[]) {
+  return {
+    name: name,
+    children: categories.map((category) => {
+      const leaves = data.map((result) => {
+        const leaf: Leaf = {
+          name: category,
+          value: result[category]
+        };
+        return leaf;
+      });
+      return {
+        name: category,
+        children: leaves
+      };
+    })
+  };
+}
 export function sanitizeNumber(x: string) {
   const maybeNumber = parseInt(x);
   if (isNaN(maybeNumber)) {

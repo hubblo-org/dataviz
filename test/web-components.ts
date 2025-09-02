@@ -146,3 +146,12 @@ pc.setAttribute("dimensions", dimensions.toString());
 pc.setAttribute("domain", "type");
 pc.setAttribute("domains", domainsForPc.toString());
 div8.append(pc);
+
+
+const div9 = document.createElement("div");
+div9.textContent = "Treemap";
+body.append(div9);
+const tmap = document.createElement("treemap-plot");
+tmap.setAttribute("name", "dc_data");
+tmap.setAttribute("content", content);
+div9.append(tmap);

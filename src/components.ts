@@ -7,7 +7,8 @@ import {
   scatterPlot,
   stackedBarPlot
 } from "./plots";
-import { normalizeValues, parseToBoolean, sanitizeNumber } from "./utils";
+import { treemap } from "./treemap";
+import { formatForTreemap, normalizeValues, parseToBoolean, sanitizeNumber } from "./utils";
 
 const defaultWidth = "800";
 const defaultHeight = "600";
@@ -18,6 +19,7 @@ const parallelCoordinatesName = "parallel-coordinates";
 const sankeyName = "sankey-diagram";
 const scatterplotName = "scatter-plot";
 const stackedBarPlotName = "stacked-bar-plot";
+const treemapName = "treemap-plot";
 
 function setupComponent(
   component: HTMLElement,
@@ -448,6 +450,50 @@ export class StackedBarPlot extends HTMLElement {
   }
 }
 
+export class Treemap extends HTMLElement {
+  name: string;
+  content: string;
+  width: string = defaultWidth;
+  height: string = defaultHeight;
+
+  static get observedAttributes() {
+    return ["content", "width", "height"];
+  }
+  constructor() {
+    super();
+    this.name;
+    this.content;
+    this.width;
+    this.height;
+  }
+  attributeChangedCallback(property: string, oldValue: string, newValue: string) {
+    if (oldValue === newValue) return;
+    this[property] = newValue;
+  }
+  connectedCallback() {
+    const castWidth = sanitizeNumber(this.width);
+    const castHeight = sanitizeNumber(this.height);
+    const dataToRender = JSON.parse(this.content);
+    const numericCategories = Object.keys(dataToRender[0]).filter(
+      (d) => typeof dataToRender[0][d] === "number"
+    );
+    const formattedData = formatForTreemap(this.name, numericCategories, dataToRender);
+
+    const style = `{margin: auto; width: ${castWidth}px; display: flex; flex-direction: column; } .swatch::before {content: ""; display: inline-block; width: 15px; height: 15px; margin-right: 5px; background: var(--color); }`;
+    const setup = setupComponent(this, "open", treemapName, castWidth, style);
+    const container = setup.shadow.getElementById(setup.containerId);
+    const treemapContainer = document.createElement("div");
+    treemapContainer.setAttribute("id", `${this.id}-treemap`);
+    const treemapLegendContainer = document.createElement("div");
+    treemapLegendContainer.setAttribute("id", `${this.id}-treemap-legend`);
+    container.appendChild(treemapContainer);
+    container.appendChild(treemapLegendContainer);
+
+    const tmap = treemap(this.id, formattedData, castWidth, castHeight);
+    container.append(tmap);
+  }
+}
+
 customElements.define(areaChartName, AreaChart);
 customElements.define(correlogramName, Correlogram);
 customElements.define(lineChartName, LineChart);
@@ -455,3 +501,4 @@ customElements.define(parallelCoordinatesName, ParallelCoordinates);
 customElements.define(sankeyName, Sankey);
 customElements.define(scatterplotName, Scatterplot);
 customElements.define(stackedBarPlotName, StackedBarPlot);
+customElements.define(treemapName, Treemap);

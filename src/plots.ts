@@ -130,7 +130,7 @@ export function minMaxScaling<Type>(domains: [keyof Type], data: Type[]): Type[]
   return scaledData;
 }
 
-function checkShadowDom(element: HTMLElement) {
+export function checkShadowDom(element: HTMLElement) {
   if (element.shadowRoot != null) {
     return true;
   } else {

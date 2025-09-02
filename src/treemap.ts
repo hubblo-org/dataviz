@@ -1,5 +1,6 @@
 import * as d3 from "d3";
 import type { Leaf, Node } from "./types/dataviz";
+import { checkShadowDom } from "./plots";
 
 function getFirstDepthParent(
   node: d3.HierarchyRectangularNode<Node>
@@ -35,6 +36,16 @@ export function treemap(source: string, tree: Node, width: number, height: numbe
   const treemapLegendWrapperId = `#${source}-treemap-legend-wrapper`;
   const svgTreemapId = `${source}-svg-treemap`;
 
+  let container;
+  const component = document.getElementById(source);
+
+  const isInShadowDom = checkShadowDom(component);
+
+  if (isInShadowDom) {
+    container = d3.select(component.shadowRoot.getElementById(`${source}-container`));
+  } else {
+    container = d3.select(component.getElementById(`${source}-container`));
+  }
   const color = d3.scaleOrdinal(
     tree.children!.map((d: Leaf) => d.name),
     d3.schemeTableau10
@@ -53,7 +64,7 @@ export function treemap(source: string, tree: Node, width: number, height: numbe
       )
   );
 
-  const treemapLegend = d3
+  const treemapLegend = container
     .select(treemapLegendId)
     .attr(
       "style",
@@ -65,22 +76,22 @@ export function treemap(source: string, tree: Node, width: number, height: numbe
       treemapLegend
         .append("span")
         .attr("class", "swatch")
-        .attr("style", `--color: ${color(domain)};`)
+        .attr("style", `--color: ${color(domain)};  margin-right: 5px;`)
+        .attr("aria-label", "treemap legend")
         .text(domain.toLowerCase());
     });
   } else {
     console.error("No element to attach the treemap legend to!");
   }
 
-  d3.select(treemapLegendWrapperId).attr(
-    "style",
-    `width: ${width}px; display: flex; margin-bottom: 12px;`
-  );
+  container
+    .select(treemapLegendWrapperId)
+    .attr("style", `width: ${width}px; display: flex; margin-bottom: 12px;`);
 
-  const treemap = d3.select(treemapId);
+  const treemap = container.select(treemapId);
   if (!treemap.empty()) {
     treemap.selectChild("svg").remove();
-    const svg = d3
+    const svg = container
       .select(treemapId)
       .append("svg")
       .attr("id", svgTreemapId)
@@ -111,7 +122,7 @@ export function treemap(source: string, tree: Node, width: number, height: numbe
             .join(".")}\n${numberFormat(leaf.value!)}`
         );
 
-      const g = d3.select(`#${gId}`);
+      const g = container.select(`#${gId}`);
 
       g.append("rect")
         .attr("id", rectId)
@@ -123,7 +134,7 @@ export function treemap(source: string, tree: Node, width: number, height: numbe
       g.append("clipPath").attr("id", clipId).append("use").attr("href", `#${rectId}`);
 
       g.append("text").attr("id", textId).attr("clip-path", `url(#${clipId}`);
-      const text = d3.select(`#${textId}`);
+      const text = container.select(`#${textId}`);
 
       nodes.forEach((node, nodeIndex) => {
         text
@@ -134,6 +145,7 @@ export function treemap(source: string, tree: Node, width: number, height: numbe
           .attr("style", "font-size: 1.3em");
       });
     });
+    return svg.node();
   } else {
     console.error("No element to attach the treemap to!");
   }
