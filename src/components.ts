@@ -23,7 +23,8 @@ function setupComponent(
   component: HTMLElement,
   mode: ShadowRootMode,
   componentName: string,
-  width: number
+  width: number,
+  style?: string
 ) {
   const shadow = component.attachShadow({ mode: mode });
   const idNumber = document.querySelectorAll(componentName).length + 1;
@@ -32,9 +33,13 @@ function setupComponent(
   const containerId = `${component.id}-container`;
   const container = document.createElement("div");
   container.setAttribute("id", containerId);
-  const style = document.createElement("style");
-  style.innerHTML = `#${containerId} {margin: auto; width: ${width}px; display: flex; flex-direction: column; }`;
-  shadow.append(style);
+  const styleElement = document.createElement("style");
+  if (style) {
+    styleElement.innerHTML = `#${containerId} ${style}`;
+  } else {
+    styleElement.innerHTML = `#${containerId} {margin: auto; width: ${width}px; display: flex; flex-direction: column; }`;
+  }
+  shadow.append(styleElement);
   shadow.append(container);
   return { shadow: shadow, containerId: containerId };
 }
@@ -288,7 +293,8 @@ export class ParallelCoordinates extends HTMLElement {
     const dataToRender = JSON.parse(this.content);
     const dimensions = this.dimensions.split(",");
     const domains = this.domains.split(",");
-    const setup = setupComponent(this, "open", parallelCoordinatesName, width);
+    const customStyle = `{margin: auto; width: ${width}px; display: flex; flex-direction: column-reverse; }`;
+    const setup = setupComponent(this, "open", parallelCoordinatesName, width, customStyle);
     const container = setup.shadow.getElementById(setup.containerId);
 
     const pc = parallelCoordinates(
@@ -301,9 +307,6 @@ export class ParallelCoordinates extends HTMLElement {
       domains
     );
     container.append(pc);
-
-    const style = container.getElementsByTagName("style")[0];
-    style.innerHTML = `#${setup.containerId} {margin: auto; width: ${width}px; display: flex; flex-direction: column-reverse; }`;
   }
 }
 
@@ -418,8 +421,9 @@ export class StackedBarPlot extends HTMLElement {
     const height = sanitizeNumber(this.height);
     const domains = this.domains.split(",");
     const dataToRender = JSON.parse(this.content);
+    const customStyle = `{margin: auto; width: ${width}px; display: flex; flex-direction: column-reverse; }`;
 
-    const setup = setupComponent(this, "open", stackedBarPlotName, width);
+    const setup = setupComponent(this, "open", stackedBarPlotName, width, customStyle);
 
     if (this.fill) {
       const normalizedData = normalizeValues(dataToRender);
