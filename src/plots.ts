@@ -278,7 +278,7 @@ export function areaChart<Type>(
       frame()
     ];
   }
-  const div = document.querySelector(`#${nodeId}`);
+  const div = document.getElementById(nodeId);
   if (div) {
     div.innerHTML = "";
     const areaChart = plot(plotOptions);
@@ -539,7 +539,7 @@ export function horizontalBarPlot<Type>(
   yLabel: string,
   lollipop: boolean
 ) {
-  let div = document.querySelector(nodeId);
+  let div = document.getElementById(nodeId);
   div.innerHTML = "";
 
   if (div) {
@@ -598,7 +598,7 @@ export function lineChart<Type>(
   yLabel: string,
   zDimension?: string
 ) {
-  let div = document.querySelector(`#${nodeId}`);
+  let div = document.getElementById(nodeId);
   div.innerHTML = "";
 
   const lineMarks = [
@@ -681,7 +681,7 @@ export function parallelCoordinates<Type>(
   domains: string[],
   minMaxScale?: boolean
 ) {
-  let div = document.querySelector(`#${nodeId}`);
+  let div = document.getElementById(nodeId);
   div.innerHTML = "";
   center(nodeId, width);
 
@@ -904,7 +904,7 @@ export function scatterPlot<Type>(
   domain: string,
   domains: string[]
 ) {
-  let div = document.querySelector(`#${nodeId}`);
+  let div = document.getElementById(nodeId);
   div.innerHTML = "";
   center(nodeId, width);
 
@@ -963,7 +963,7 @@ export function stackedBarPlot<Type>(
   yLabel: string,
   fillLabel?: string
 ) {
-  let div = document.querySelector(`#${nodeId}`);
+  let div = document.getElementById(nodeId);
   div.innerHTML = "";
   center(nodeId, width);
 

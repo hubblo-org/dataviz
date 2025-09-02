@@ -11,7 +11,7 @@ export function renderHorizontalBarPlot() {
   const plotId = "horizontal-bar-plot";
   renderPlotDiv(plotId);
 
-  horizontalBarPlot(`#${plotId}`, data, 800, 600, "value", "type", true);
+  horizontalBarPlot(plotId, data, 800, 600, "value", "type", true);
 }
 
 export function renderStackedBarPlot() {
