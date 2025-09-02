@@ -63,7 +63,7 @@ export function normalizeValues(data: object[]) {
         normalizedElement[k] = "low";
       } else if (valueToNormalize > maxAvg) {
         normalizedElement[k] = "high";
-      } else if (valueToNormalize > minAvg && valueToNormalize < maxAvg) {
+      } else if (valueToNormalize >= minAvg && valueToNormalize <= maxAvg) {
         normalizedElement[k] = "average";
       }
     });

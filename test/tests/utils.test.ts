@@ -14,11 +14,25 @@ describe("normalizeValues test suite", () => {
         surface: 500
       },
       {
+        type: "colocation",
+        status: "open",
+        power: 3,
+        waterUsage: 3,
+        surface: 2750, 
+      },
+      {
         type: "hyperscaler",
         status: "open",
         power: 5,
         waterUsage: 5,
         surface: 5000
+      },
+      {
+        type: "colocation",
+        status: "open",
+        power: 7.5,
+        waterUsage: 6,
+        surface: 7500 
       },
       {
         type: "hyperscaler",
@@ -35,7 +49,9 @@ describe("normalizeValues test suite", () => {
     pertinentProperties.forEach((property) => {
       expect(normalizedData[0][property]).toStrictEqual("low");
       expect(normalizedData[1][property]).toStrictEqual("average");
-      expect(normalizedData[2][property]).toStrictEqual("high");
+      expect(normalizedData[2][property]).toStrictEqual("average");
+      expect(normalizedData[3][property]).toStrictEqual("average");
+      expect(normalizedData[4][property]).toStrictEqual("high");
     });
   });
 });
