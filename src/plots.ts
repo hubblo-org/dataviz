@@ -130,6 +130,14 @@ export function minMaxScaling<Type>(domains: [keyof Type], data: Type[]): Type[]
   return scaledData;
 }
 
+function checkShadowDom(element: HTMLElement) {
+  if (element.shadowRoot != null) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 /** Renders an element allowing to select a dataset property to be represented visually.
  *
  * @param nodeId - The DOM element where the element will be rendered.
@@ -150,12 +158,14 @@ export function addSelect<Type>(
   const initialOptionId = `${nodeId}-${initialOption}`;
   const selectContainerId = `${nodeId}-select-container`;
   const selectId = `${nodeId}-select`;
-  const divForSelect = document.querySelector(`#${selectContainerId}`);
+  const container = document.getElementById(nodeId);
+  const isInTheShadowDom = checkShadowDom(container);
+  const divForSelect = document.getElementById(selectContainerId);
 
   if (!divForSelect) {
     let parent;
     const container = document.getElementById(nodeId);
-    if (container.shadowRoot != null) {
+    if (isInTheShadowDom) {
       parent = container.shadowRoot.getElementById(`${nodeId}-container`);
     } else {
       parent = document.getElementById(nodeId).parentElement.nodeName;
@@ -187,11 +197,11 @@ export function addSelect<Type>(
         .text(option)
     );
 
-    if (container.shadowRoot != null) {
-      const selection = container.shadowRoot.getElementById(`${initialOptionId}`);
+    if (isInTheShadowDom) {
+      const selection = container.shadowRoot.getElementById(initialOptionId);
       (selection as HTMLOptionElement).selected = true;
     } else {
-      const selection = document.getElementById(`${initialOptionId}`);
+      const selection = document.getElementById(initialOptionId);
       (selection as HTMLOptionElement).selected = true;
     }
   }
@@ -470,7 +480,8 @@ export function highlight(
   highlightElement.setAttribute("id", "highlight-category");
   highlightElement.setAttribute("style", selectStyle);
 
-  const component = select(`#${nodeId}`).node();
+  const component = document.getElementById(nodeId);
+  const isInTheShadowDom = checkShadowDom(component);
 
   const options = domains;
   if (!options.includes(initialSelection)) {
@@ -489,7 +500,7 @@ export function highlight(
   });
   optionsElements.forEach((element) => highlightElement.append(element));
 
-  if (component.shadowRoot != null) {
+  if (isInTheShadowDom) {
     const divInShadowDom = component.shadowRoot.getElementById(`${component.id}-container`);
     highlightElement.addEventListener("change", function () {
       highlightEvent(this, divInShadowDom, className, initialSelection, color);
@@ -920,6 +931,7 @@ export function scatterPlot<Type>(
   div.append(scatterplot);
   return scatterplot;
 }
+
 /** Renders a bar plot, with each bar with stacked values.
  *
  * @remarks
@@ -1006,20 +1018,22 @@ export function stackedBarPlot<Type>(
     const selectId = addSelect(nodeId, data, xLabel, yLabel, width, fillLabel);
     let selectElement: HTMLSelectElement;
     const container = document.getElementById(nodeId);
+    const isInTheShadowDom = checkShadowDom(container);
 
-    if (container.shadowRoot != null) {
-      selectElement = container.shadowRoot.getElementById(selectId);
+    if (isInTheShadowDom) {
+      selectElement = container.shadowRoot.getElementById(selectId) as HTMLSelectElement;
     } else {
-      selectElement = document.getElementById(selectId);
+      selectElement = document.getElementById(selectId) as HTMLSelectElement;
     }
     selectElement.addEventListener("change", function () {
       const selectedProperty = this.value;
       const fieldDomains = [...new Set(data.map((element: Type) => element[selectedProperty]))];
+      const containerId = `${nodeId}-container`;
       const propertyId = `${nodeId}-${selectedProperty}`;
       selectElement.value = selectedProperty;
-      if (container.shadowRoot != null) {
+      if (isInTheShadowDom) {
         const option = container.shadowRoot.getElementById(propertyId);
-        container.shadowRoot.getElementById(`${nodeId}-container`).innerHTML = "";
+        container.shadowRoot.getElementById(containerId).innerHTML = "";
         const sbp = stackedBarPlot(
           nodeId,
           data,
@@ -1031,7 +1045,7 @@ export function stackedBarPlot<Type>(
           selectedProperty
         );
 
-        container.shadowRoot.getElementById(`${nodeId}-container`).appendChild(sbp);
+        container.shadowRoot.getElementById(containerId).appendChild(sbp);
         (option as HTMLOptionElement).selected = true;
       } else {
         const option = document.getElementById(propertyId);
