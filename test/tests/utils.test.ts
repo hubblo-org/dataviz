@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { dcData } from "../data/data";
+import { hierarchy } from "d3";
+import { dcData, nestedDcData } from "../data/data";
 import { formatForTreemap, normalizeValues, sanitizeNumber } from "../../src";
 import { parseToBoolean } from "../../src/utils";
+import { Leaf, Node } from "../../src/types/dataviz";
 
 describe("normalizeValues test suite", () => {
   it("normalizes numeric values for each property of an element to a quality", () => {
@@ -92,10 +94,10 @@ describe("parseToBoolean test suite", () => {
 
 describe("formatForTreemap test suite", () => {
   it("converts a data structure to a tree structure usable for a treemap", () => {
-    const categories = Object.keys(dcData);
+    const categories = Object.keys(dcData[0]).filter((key) => typeof dcData[0][key] === "number");
     const tree = formatForTreemap("dcData", categories, dcData);
     tree.children.forEach((leaf) => {
-      leaf.children.forEach((obj) => expect(obj.value).toBeTypeOf("number"));
+      leaf.children.forEach((obj: Leaf) => expect(obj.value).toBeTypeOf("number"));
     });
   });
 });
