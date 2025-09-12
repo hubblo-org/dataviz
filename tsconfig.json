@@ -3,9 +3,10 @@
     "module": "commonjs",
     "target": "es2019",
     "declaration": true,
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "types": ["vitest/globals", "@testing-library/jest-dom"]
   },
   "include": [
-    "src/**/*"
+    "src/**/*", "./vitest.setup.ts"
   ]
 }

@@ -1,0 +1,32 @@
+<!doctype html>
+<head>
+	<meta charset="utf-8" />
+		<script type="module" src="./test/render.ts">
+		</script>
+</head>
+
+<body>
+	<header>
+		<nav>
+		<a href="./test/carto.html"> Cartography </a>
+		<a href="./test/web-components.html"> Web Components </a>
+		</nav>
+	</header>
+	<main>
+		<p> Plots as methods </p>
+		<select id="plot-selection">
+		</select>
+		<div id="render-plot">
+		</div>
+
+	</main>
+</body>
+
+<style>
+
+#render-plot > div > svg {
+	margin: auto;
+	overflow: visible;
+}
+
+</style>

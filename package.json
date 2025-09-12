@@ -10,10 +10,31 @@
 	"dependencies": {
 		"@observablehq/plot": "^0.6.17",
 		"@types/d3": "^7.4.3",
-		"d3": "^7.9.0"
+		"@types/d3-sankey": "^0.12.4",
+		"@types/geojson": "^7946.0.16",
+		"@types/leaflet": "^1.9.17",
+		"d3": "^7.9.0",
+		"d3-sankey": "^0.12.3",
+		"leaflet": "^1.9.4"
 	},
 	"devDependencies": {
+		"@testing-library/dom": "^10.4.0",
+		"@testing-library/jest-dom": "^6.6.3",
+		"@testing-library/user-event": "^14.6.1",
+		"@types/node": "^22.15.21",
+		"@wdio/browser-runner": "^9.19.2",
+		"@wdio/cli": "^9.19.2",
+		"@wdio/mocha-framework": "^9.19.2",
+		"@wdio/spec-reporter": "^9.19.2",
+		"jsdom": "^26.1.0",
 		"prettier": "3.5.3",
-		"vite": "^6.3.5"
+		"vite": "^6.3.5",
+		"vitest": "^3.1.4"
+	},
+	"scripts": {
+		"testServer": "vite serve",
+		"test": "vitest",
+		"wdio": "wdio run ./wdio.conf.ts",
+		"testWebComponents": "wdio run ./wdio.conf.ts --spec test/tests/components.test.ts"
 	}
 }
