@@ -65,9 +65,9 @@ describe("highlight test suite", () => {
   function renderDiv() {
     const div = document.createElement("div");
     document.body.append(div);
-    const highlightElements = highlight("class", testDomains, color as ColorFunction);
-    div.append(highlightElements.label);
-    div.append(highlightElements.select);
+    const id = "test-container";
+    div.setAttribute("id", id);
+    highlight(div.id, "class", testDomains, color as ColorFunction);
   }
 
   it("should have a label for the select element", () => {
